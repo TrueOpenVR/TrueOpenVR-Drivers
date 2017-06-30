@@ -29,8 +29,8 @@ end;
   TVRInfo = VRInfo;
 
   //Controllers
-  PControllers = ^TControllers;
-  _Controllers = record
+  PController = ^TController;
+  _Controller = record
     X: double;
     Y: double;
     Z: double;
@@ -42,8 +42,8 @@ end;
     ThumbX: smallint;
     ThumbY: smallint;
 end;
-  Controllers = _Controllers;
-  TControllers = Controllers;
+  Controller = _Controller;
+  TController = Controller;
 
 type
   TUDPServer = class
@@ -100,7 +100,7 @@ begin
   Result:=1;
 end;
 
-function GetControllersData(out myController, myController2: TControllers): DWORD; stdcall;
+function GetControllersData(out myController, myController2: TController): DWORD; stdcall;
 begin
   //Controller 1
   myController.X:=0;
