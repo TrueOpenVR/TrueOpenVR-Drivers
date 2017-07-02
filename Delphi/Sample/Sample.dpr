@@ -1,7 +1,7 @@
 library Sample;
 
 uses
-  SysUtils, Classes, Windows, IniFiles, Registry;
+  SysUtils, Classes, Windows, Registry;
 
 type
   //HMD
@@ -16,17 +16,6 @@ type
 end;
   HMD = _HMDData;
   THMD = HMD;
-
-  //VR Init
-  PVRInfo = ^TVRInfo;
-  _VRInfo = record
-    ScreenIndex: integer;
-    Scale: boolean;
-    UserWidth: integer;
-    UserHeight: integer;
-  end;
-  VRInfo = _VRInfo;
-  TVRInfo = VRInfo;
 
   //Controllers
   PController = ^TController;
@@ -46,26 +35,6 @@ end;
   TController = Controller;
 
 {$R *.res}
-
-function GetInfo(out myVRInfo: TVRInfo): DWORD; stdcall;
-var
-  Ini: TIniFile; Reg: TRegistry;
-begin
-  Reg:=TRegistry.Create;
-  Reg.RootKey:=HKEY_CURRENT_USER;
-  Result:=0;
-  if Reg.OpenKey('\Software\TrueOpenVR', false)=false then Exit;
-  if FileExists(Reg.ReadString('Path') + 'TOVR.ini')=false then Exit;
-
-  Ini:=TIniFile.Create(Reg.ReadString('Path') + 'TOVR.ini');
-  MyVRInfo.ScreenIndex:=Ini.ReadInteger('VRInit', 'ScreenIndex', 0);
-  myVRInfo.Scale:=Ini.ReadBool('VRInit', 'Scale', false);
-  myVRInfo.UserWidth:=Ini.ReadInteger('VRInit', 'UserWidth', 1280);
-  myVRInfo.UserHeight:=Ini.ReadInteger('VRInit', 'UserHeight', 720);
-  Ini.Free;
-  Reg.Free;
-  Result:=1;
-end;
 
 function GetHMDData(out myHMD: THMD): DWORD; stdcall;
 begin
@@ -123,7 +92,7 @@ begin
 end;
 
 exports
-  GetInfo index 1, GetHMDData index 2, SetCentering index 3, GetControllersData index 4, SetControllerData index 5;
+  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
 
 begin
 
