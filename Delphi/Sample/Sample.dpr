@@ -1,7 +1,7 @@
 library Sample;
 
 uses
-  SysUtils, Classes, Windows, Registry;
+  Windows;
 
 type
   //HMD

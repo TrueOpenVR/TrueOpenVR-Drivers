@@ -1,7 +1,7 @@
 library Fake;
 
 uses
-  SysUtils, Classes, Windows, Registry;
+  Windows;
 
 type
   //HMD

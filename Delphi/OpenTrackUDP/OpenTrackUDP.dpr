@@ -1,7 +1,7 @@
 library OpenTrackUDP;
 
 uses
-  SysUtils, Classes, Windows, IdSocketHandle, IdUDPServer, Registry;
+  Classes, Windows, IdSocketHandle, IdUDPServer;
 
 type
   //HMD
