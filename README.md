@@ -7,7 +7,7 @@ Ready and samples drivers for VR devices.
 
 **Splitter** - the driver allows you to connect one driver for the VR headset, and the second driver for the controllers. You can configure the plug-in in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the driver names.
 
-**Sample** - is a demo driver for C ++ and Delphi.
+**Sample** - is a sample driver for C++ and Delphi.
 
 **Fake** - driver simulating a VR device.
 
