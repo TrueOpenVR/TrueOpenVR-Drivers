@@ -5,6 +5,8 @@
 ## Драйверы
 **OpenTrackUDP** - драйвер позволяющий подключить множество различных трекеров: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Fusion, Razer Hydra, UDP over network (custom for developers), SteamVR). В настройках OpenTrack нужно изменить "Выходной интерфейс" на "UDP over network" и IP адрес на "127.0.0.1".
 
+**Razor IMU** - драйвер позволяющий отслеживать вращения VR шлема, с помощью трекера Razor IMU, на базе Arduino и GY-85, с прошивкой [Razor_AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino).
+
 **Splitter** - драйвер позволяющий подключить один драйвер для VR шлема, а второй драйвер для контроллеров. Настроить драйверы можно в файле "Splitter.ini", находяющийся в папке "TrueOpenVR\Drivers", изменив названия драйверов.
 
 **Sample** - демонстрационный драйвер на С++ и Delphi. 
