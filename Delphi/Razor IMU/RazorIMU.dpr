@@ -1,7 +1,7 @@
 library RazorIMU;
 
 uses
-  Windows, CPDrv, Math, IniFiles, SysUtils, Registry, Dialogs;
+  Windows, CPDrv, Math, IniFiles, SysUtils, Registry;
 
 type
   //HMD
@@ -53,7 +53,7 @@ end;
 
 var
   CommPortDrv: TCommPortDrv;
-  PacketBuffer, DriversPath: string;
+  PacketBuffer: string;
   YawOffset, PitchOffset, RollOffset: double;
   hTimer: THandle;
   CommPortNum: integer;
@@ -208,7 +208,7 @@ begin
   end;
 end;
 
-procedure GetDriversPath;
+function GetDriversPath: string;
 var
   Reg: TRegistry;
 begin
@@ -216,9 +216,9 @@ begin
   Reg.RootKey:=HKEY_CURRENT_USER;
   if Reg.OpenKey('\Software\TrueOpenVR', false) = true then begin
     if DirectoryExists(Reg.ReadString('Drivers')) then
-      DriversPath:=Reg.ReadString('Drivers')
+      Result:=Reg.ReadString('Drivers')
     else
-      DriversPath:='';
+      Result:='';
   end;
   Reg.CloseKey;
   Reg.Free;
@@ -237,7 +237,7 @@ begin
 
   GetDriversPath;
 
-  Ini:=TIniFile.Create(DriversPath + 'RazorIMU.ini');
+  Ini:=TIniFile.Create(GetDriversPath + 'RazorIMU.ini');
   CommPortNum:=Ini.ReadInteger('Main', 'ComPort', 1);
   Ini.Free;
 
