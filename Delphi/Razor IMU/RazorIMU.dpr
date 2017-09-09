@@ -1,7 +1,7 @@
 library RazorIMU;
 
 uses
-  Windows, CPDrv, Math, IniFiles, SysUtils, Registry;
+  Windows, Math, IniFiles, SysUtils, Registry, Classes;
 
 type
   //HMD
@@ -34,26 +34,24 @@ end;
   Controller = _Controller;
   TController = Controller;
 
-type
-  TCommPortDrv = class
-  private
-    CommPortDriver: TCommPortDriver;
-  procedure CommPortDriverReceiveData(Sender: TObject; DataPtr: Pointer;
-      DataSize: Cardinal);
-  public
-  constructor Create; reintroduce;
-  destructor Destroy; override;
-end;
-
 type TRazorIMU = record
     Yaw: double;
     Pitch: double;
     Roll: double;
 end;
 
+TReadThread = class(TThread)
+  private
+  { Private declarations }
+  protected
+    procedure Execute; override;
+end;
+
 var
-  CommPortDrv: TCommPortDrv;
+  CommHandle: hFile;
   PacketBuffer: string;
+  ReadThreadWork: boolean;
+  ReadThread: TReadThread;
   YawOffset, PitchOffset, RollOffset: double;
   hTimer: THandle;
   CommPortNum: integer;
@@ -142,61 +140,6 @@ begin
     Result:=0;
 end;
 
-procedure TCommPortDrv.CommPortDriverReceiveData(Sender: TObject;
-  DataPtr: Pointer; DataSize: Cardinal);
-var
-  i: integer;
-  s: string;
-begin
-  s:='';
-  for i:=0 to DataSize - 1 do
-    s:=s + (PChar(DataPtr)[i]);
-
-  PacketBuffer:=PacketBuffer + s;
-end;
-
-constructor TCommPortDrv.Create;
-begin
-  CommPortDriver:=TCommPortDriver.Create(nil);
-  CommPortDriver.BaudRateValue:=115200;
-  CommPortDriver.PortName:='\\.\Com' + IntToStr(CommPortNum);
-  CommPortDriver.DataBits:=db8BITS;
-  CommPortDriver.OnReceiveData:=CommPortDriverReceiveData;
-  CommPortDriver.Connect;
-  if CommPortDriver.Connect = true then
-    HMDConnected:=true
-  else
-    HMDConnected:=false;
-end;
-
-destructor TCommPortDrv.Destroy;
-begin
-  CommPortDriver.Free;
-  inherited destroy;
-end;
-
-procedure ReadBuffer(WND: HWND; uMsg: UINT; idEvent: UINT; dwTime: DWORD); stdcall;
-var
-  s: string;
-begin
-  if Length(PacketBuffer) > 0 then begin
-    s:=Copy(PacketBuffer, 1, Pos(#13, PacketBuffer) - 1);
-
-    delete(PacketBuffer, 1, Pos(#13, PacketBuffer) + 1);
-    if Copy(s, 1, 5)='#YPR=' then begin
-      Delete(s, 1, 5);
-      MyRazorIMU.Yaw:=StrToFloat(StringReplace(copy(s, 1, pos(',', s) - 1), '.', ',', [rfIgnoreCase]));
-
-      Delete(s, 1, pos(',', s));
-      MyRazorIMU.Pitch:=StrToFloat(StringReplace(copy(s, 1, pos(',', s) - 1), '.', ',', [rfIgnoreCase]));
-
-      Delete(s, 1, pos(',', s));
-      MyRazorIMU.Roll:=StrToFloat(StringReplace(Trim(s), '.', ',', [rfIgnoreCase]));
-
-    end;
-  end;
-end;
-
 function GetDriversPath: string;
 var
   Reg: TRegistry;
@@ -215,12 +158,14 @@ end;
 
 procedure DllMain(Reason: integer);
 var
-  Ini: TIniFile;
+  Ini: TIniFile; DCB: TDCB;
 begin
   case Reason of
     DLL_PROCESS_ATTACH:
       begin
-        hTimer:=SetTimer(0, 0, 0, @ReadBuffer);
+        ReadThreadWork:=True;
+        ReadThread:=TReadThread.Create(False);
+        ReadThread.Priority:=tpNormal;
 
         GetDriversPath;
 
@@ -232,14 +177,54 @@ begin
         PitchOffset:=0;
         RollOffset:=0;
 
-        CommPortDrv:=TCommPortDrv.Create;
+        CommHandle:=CreateFile(PChar('\\.\COM' + IntToStr(CommPortNum)), GENERIC_READ or GENERIC_WRITE, 0, nil, OPEN_EXISTING, 0, 0);
+        if (CommHandle = INVALID_HANDLE_VALUE) then
+          HMDConnected:=false
+        else begin
+          GetCommState(CommHandle, DCB);
+          DCB.BaudRate:=CBR_115200;
+          DCB.Parity:=NOPARITY;
+          DCB.ByteSize:=8;
+          DCB.StopBits:=OneStopBit;
+          SetCommState(CommHandle, DCB);
+          HMDConnected:=true;
+        end;
       end;
 
     DLL_PROCESS_DETACH:
       begin
-        KillTimer(0, hTimer);
-        CommPortDrv.Free;
+        ReadThreadWork:=false;
+        CloseHandle(CommHandle);
       end;
+  end;
+end;
+
+procedure TReadThread.Execute;
+var
+  s: string; Bytes: Cardinal; Buff: array[0..127] of Char;
+begin
+  while ReadThreadWork do begin
+
+    if ReadFile(CommHandle,Buff, SizeOf(Buff), Bytes, nil) then
+      if Bytes > 0 then
+        PacketBuffer:=PacketBuffer + string(Buff);
+
+    if Length(PacketBuffer) > 0 then begin
+
+      s:=Copy(PacketBuffer, 1, Pos(#13, PacketBuffer) - 1);
+      delete(PacketBuffer, 1, Pos(#13, PacketBuffer) + 1);
+
+      if Copy(s, 1, 5)='#YPR=' then begin
+        Delete(s, 1, 5);
+        MyRazorIMU.Yaw:=StrToFloat(StringReplace(copy(s, 1, pos(',', s) - 1), '.', ',', [rfIgnoreCase]));
+
+        Delete(s, 1, pos(',', s));
+        MyRazorIMU.Pitch:=StrToFloat(StringReplace(copy(s, 1, pos(',', s) - 1), '.', ',', [rfIgnoreCase]));
+
+        Delete(s, 1, pos(',', s));
+        MyRazorIMU.Roll:=StrToFloat(StringReplace(Trim(s), '.', ',', [rfIgnoreCase]));
+      end;
+    end;
   end;
 end;
 
