@@ -36,6 +36,7 @@ end;
 
 var
   HMDDllHandle, CtrlsDllHandle: HMODULE;
+  Error: boolean;
   DriverGetHMDData: function(out myHMD: THMD): DWORD; stdcall;
   DriverGetControllersData: function(out myController, myController2: TController): DWORD; stdcall;
   DriverSetControllerData: function (dwIndex: integer; MotorSpeed: dword): DWORD; stdcall;
@@ -70,7 +71,7 @@ end;
 
 procedure DllMain(Reason: integer);
 var
-  Ini: TIniFile; Reg: TRegistry; HMDDrvPath, CtrlsDrvPath: string; Error: boolean;
+  Ini: TIniFile; Reg: TRegistry; HMDDrvPath, CtrlsDrvPath: string;
 begin
   case Reason of
     DLL_PROCESS_ATTACH:
@@ -107,7 +108,7 @@ begin
       end;
 
     DLL_PROCESS_DETACH:
-      begin
+      if Error = false then begin
         FreeLibrary(HMDDllHandle);
         FreeLibrary(CtrlsDllHandle);
       end;
