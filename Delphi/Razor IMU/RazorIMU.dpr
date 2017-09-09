@@ -197,17 +197,6 @@ begin
   end;
 end;
 
-procedure DllMain(Reason: integer);
-begin
-  case Reason of
-    DLL_PROCESS_DETACH:
-      begin
-        KillTimer(0, hTimer);
-        CommPortDrv.Free;
-      end;
-  end;
-end;
-
 function GetDriversPath: string;
 var
   Reg: TRegistry;
@@ -224,27 +213,41 @@ begin
   Reg.Free;
 end;
 
-exports
-  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
-
+procedure DllMain(Reason: integer);
 var
   Ini: TIniFile;
 begin
+  case Reason of
+    DLL_PROCESS_ATTACH:
+      begin
+        hTimer:=SetTimer(0, 0, 0, @ReadBuffer);
+
+        GetDriversPath;
+
+        Ini:=TIniFile.Create(GetDriversPath + 'RazorIMU.ini');
+        CommPortNum:=Ini.ReadInteger('Main', 'ComPort', 1);
+        Ini.Free;
+
+        YawOffset:=0;
+        PitchOffset:=0;
+        RollOffset:=0;
+
+        CommPortDrv:=TCommPortDrv.Create;
+      end;
+
+    DLL_PROCESS_DETACH:
+      begin
+        KillTimer(0, hTimer);
+        CommPortDrv.Free;
+      end;
+  end;
+end;
+
+exports
+  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
+
+begin
   DllProc:=@DllMain;
   DllProc(DLL_PROCESS_ATTACH);
-
-  hTimer:=SetTimer(0, 0, 0, @ReadBuffer);
-
-  GetDriversPath;
-
-  Ini:=TIniFile.Create(GetDriversPath + 'RazorIMU.ini');
-  CommPortNum:=Ini.ReadInteger('Main', 'ComPort', 1);
-  Ini.Free;
-
-  YawOffset:=0;
-  PitchOffset:=0;
-  RollOffset:=0;
-  
-  CommPortDrv:=TCommPortDrv.Create;
 end.
  

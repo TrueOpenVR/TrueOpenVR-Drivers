@@ -91,10 +91,19 @@ begin
   Result:=0;
 end;
 
+procedure DllMain(Reason: integer);
+begin
+  {case Reason of
+    DLL_PROCESS_ATTACH:
+    DLL_PROCESS_DETACH:
+  end;}
+end;
+
 exports
   GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
 
 begin
-
+  DllProc:=@DllMain;
+  DllProc(DLL_PROCESS_ATTACH);
 end.
  

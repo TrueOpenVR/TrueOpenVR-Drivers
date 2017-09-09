@@ -68,39 +68,56 @@ begin
   end;
 end;
 
-exports
-  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
-
+procedure DllMain(Reason: integer);
 var
   Ini: TIniFile; Reg: TRegistry; HMDDrvPath, CtrlsDrvPath: string; Error: boolean;
 begin
-  Error:=false;
-  Reg:=TRegistry.Create;
-  Reg.RootKey:=HKEY_CURRENT_USER;
-  if Reg.OpenKey('\Software\TrueOpenVR', false) = false then Error:=true;
-  if DirectoryExists(Reg.ReadString('Drivers')) = false then Error:=true;
+  case Reason of
+    DLL_PROCESS_ATTACH:
+      begin
+        Error:=false;
+        Reg:=TRegistry.Create;
+        Reg.RootKey:=HKEY_CURRENT_USER;
+        if Reg.OpenKey('\Software\TrueOpenVR', false) = false then Error:=true;
+        if DirectoryExists(Reg.ReadString('Drivers')) = false then Error:=true;
 
-  if FileExists(Reg.ReadString('Drivers') + 'Splitter.ini') = false then Error:=true;
+        if FileExists(Reg.ReadString('Drivers') + 'Splitter.ini') = false then Error:=true;
 
-  if Error = false then begin
-    Ini:=TIniFile.Create(Reg.ReadString('Drivers') + 'Splitter.ini');
-    HMDDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Drivers', 'HMD', '');
-    CtrlsDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Drivers', 'Controllers', '');
-    Ini.Free;
+        if Error = false then begin
+          Ini:=TIniFile.Create(Reg.ReadString('Drivers') + 'Splitter.ini');
+          HMDDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Drivers', 'HMD', '');
+          CtrlsDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Drivers', 'Controllers', '');
+          Ini.Free;
 
-    if (FileExists(HMDDrvPath) = false) or (FileExists(CtrlsDrvPath) = false) then Error:=true;
+          if (FileExists(HMDDrvPath) = false) or (FileExists(CtrlsDrvPath) = false) then Error:=true;
 
-    Reg.CloseKey;
+          Reg.CloseKey;
+        end;
+
+        if Error = false then begin
+          HMDDllHandle:=LoadLibrary(PChar(HMDDrvPath));
+          CtrlsDllHandle:=LoadLibrary(PChar(CtrlsDrvPath));
+          @DriverGetHMDData:=GetProcAddress(HMDDllHandle, 'GetHMDData');
+          @DriverGetControllersData:=GetProcAddress(CtrlsDllHandle, 'GetControllersData');
+          @DriverSetControllerData:=GetProcAddress(CtrlsDllHandle, 'SetControllerData');
+          @DriverSetCenteringHMD:=GetProcAddress(HMDDllHandle, 'SetCentering');
+          @DriverSetCenteringCtrls:=GetProcAddress(CtrlsDllHandle, 'SetCentering');
+        end;
+        Reg.Free;
+      end;
+
+    DLL_PROCESS_DETACH:
+      begin
+        FreeLibrary(HMDDllHandle);
+        FreeLibrary(CtrlsDllHandle);
+      end;
   end;
+end;
 
-  if Error = false then begin
-    HMDDllHandle:=LoadLibrary(PChar(HMDDrvPath));
-    CtrlsDllHandle:=LoadLibrary(PChar(CtrlsDrvPath));
-    @DriverGetHMDData:=GetProcAddress(HMDDllHandle, 'GetHMDData');
-    @DriverGetControllersData:=GetProcAddress(CtrlsDllHandle, 'GetControllersData');
-    @DriverSetControllerData:=GetProcAddress(CtrlsDllHandle, 'SetControllerData');
-    @DriverSetCenteringHMD:=GetProcAddress(HMDDllHandle, 'SetCentering');
-    @DriverSetCenteringCtrls:=GetProcAddress(CtrlsDllHandle, 'SetCentering');
-  end;
-  Reg.Free;
+exports
+  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
+
+begin
+  DllProc:=@DllMain;
+  DllProc(DLL_PROCESS_ATTACH);
 end.

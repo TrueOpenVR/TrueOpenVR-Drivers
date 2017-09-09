@@ -55,6 +55,7 @@ end;
 
 var
   OpenTrack: TOpenTrackPacket;
+  MyUDPServer: TUDPServer;
 
 {$R *.res}
 
@@ -141,7 +142,16 @@ begin
   Adata.Read(OpenTrack, SizeOf(OpenTrack));
 end;
 
+procedure DllMain(Reason: integer);
 begin
-  TUDPServer.Create;
+  case Reason of
+    DLL_PROCESS_ATTACH: MyUDPServer:=TUDPServer.Create;
+    DLL_PROCESS_DETACH: MyUDPServer.Free;
+  end;
+end;
+
+begin
+  DllProc:=@DllMain;
+  DllProc(DLL_PROCESS_ATTACH);
 end.
  
