@@ -1,7 +1,7 @@
 library RazorIMU;
 
 uses
-  Windows, Math, IniFiles, SysUtils, Registry, Classes;
+  Windows, IniFiles, SysUtils, Registry;
 
 type
   //HMD
@@ -40,20 +40,15 @@ type TRazorIMU = record
     Roll: double;
 end;
 
-TReadThread = class(TThread)
-  private
-  { Private declarations }
-  protected
-    procedure Execute; override;
-end;
-
 var
   CommHandle: hFile;
+  CommThrd, RBuffThrd: THandle;
+  Ovr: TOverlapped;
+  Stat: TComStat;
+  Kols, TransMask, Errs: DWord;
+
   PacketBuffer: string;
-  ReadThreadWork: boolean;
-  ReadThread: TReadThread;
   YawOffset, PitchOffset, RollOffset: double;
-  hTimer: THandle;
   CommPortNum: integer;
   MyRazorIMU: TRazorIMU;
   HMDConnected: boolean;
@@ -156,58 +151,32 @@ begin
   Reg.Free;
 end;
 
-procedure DllMain(Reason: integer);
+procedure ReadComm;
 var
-  Ini: TIniFile; DCB: TDCB;
+  Buff: array[0..127] of char;
 begin
-  case Reason of
-    DLL_PROCESS_ATTACH:
-      begin
-        ReadThreadWork:=True;
-        ReadThread:=TReadThread.Create(False);
-        ReadThread.Priority:=tpNormal;
+  while HMDConnected do begin
 
-        GetDriversPath;
+    TransMask:=0;
+    WaitCommEvent(CommHandle,TransMask, @Ovr);
 
-        Ini:=TIniFile.Create(GetDriversPath + 'RazorIMU.ini');
-        CommPortNum:=Ini.ReadInteger('Main', 'ComPort', 1);
-        Ini.Free;
+    if (TransMask and EV_RXFLAG) = EV_RXFLAG then begin
+      ClearCommError(CommHandle, Errs, @Stat);
+      Kols:=Stat.cbInQue;
+      ReadFile(CommHandle, Buff, Kols, Kols, @Ovr);
 
-        YawOffset:=0;
-        PitchOffset:=0;
-        RollOffset:=0;
+      PacketBuffer:=PacketBuffer + string(Buff);
+      FillChar(Buff, Length(Buff), 0);
+     end;
 
-        CommHandle:=CreateFile(PChar('\\.\COM' + IntToStr(CommPortNum)), GENERIC_READ or GENERIC_WRITE, 0, nil, OPEN_EXISTING, 0, 0);
-        if (CommHandle = INVALID_HANDLE_VALUE) then
-          HMDConnected:=false
-        else begin
-          GetCommState(CommHandle, DCB);
-          DCB.BaudRate:=CBR_115200;
-          DCB.Parity:=NOPARITY;
-          DCB.ByteSize:=8;
-          DCB.StopBits:=OneStopBit;
-          SetCommState(CommHandle, DCB);
-          HMDConnected:=true;
-        end;
-      end;
-
-    DLL_PROCESS_DETACH:
-      begin
-        ReadThreadWork:=false;
-        CloseHandle(CommHandle);
-      end;
   end;
 end;
 
-procedure TReadThread.Execute;
+procedure ReadBuffer;
 var
-  s: string; Bytes: Cardinal; Buff: array[0..127] of Char;
+  s: string;
 begin
-  while ReadThreadWork do begin
-
-    if ReadFile(CommHandle,Buff, SizeOf(Buff), Bytes, nil) then
-      if Bytes > 0 then
-        PacketBuffer:=PacketBuffer + string(Buff);
+  while HMDConnected do begin
 
     if Length(PacketBuffer) > 0 then begin
 
@@ -225,6 +194,50 @@ begin
         MyRazorIMU.Roll:=StrToFloat(StringReplace(Trim(s), '.', ',', [rfIgnoreCase]));
       end;
     end;
+
+  end;
+end;
+
+procedure DllMain(Reason: integer);
+var
+  Ini: TIniFile; DCB: TDCB; ThreadID, ThreadID2: dword;
+begin
+  case Reason of
+    DLL_PROCESS_ATTACH:
+      begin
+        Ini:=TIniFile.Create(GetDriversPath() + 'RazorIMU.ini');
+        CommPortNum:=Ini.ReadInteger('Main', 'ComPort', 1);
+        Ini.Free;
+
+        YawOffset:=0;
+        PitchOffset:=0;
+        RollOffset:=0;
+
+        CommHandle:=CreateFile(PChar('\\.\COM' + IntToStr(CommPortNum)), GENERIC_READ or GENERIC_WRITE, 0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL or FILE_FLAG_OVERLAPPED, 0);
+        if (CommHandle = INVALID_HANDLE_VALUE) then
+          HMDConnected:=false
+        else begin
+          SetCommMask(CommHandle, EV_RXFLAG);
+          GetCommState(CommHandle, DCB);
+          DCB.BaudRate:=CBR_115200;
+          DCB.Parity:=NOPARITY;
+          DCB.ByteSize:=8;
+          DCB.StopBits:=OneStopBit;
+          DCB.EvtChar:=chr(13);
+          SetCommState(CommHandle, DCB);
+          HMDConnected:=true;
+          CommThrd:=CreateThread(nil, 0, @ReadComm, nil, 0, ThreadID);
+          RBuffThrd:=CreateThread(nil, 0, @ReadBuffer, nil, 0, ThreadID2);
+        end;
+      end;
+
+    DLL_PROCESS_DETACH:
+      begin
+        HMDConnected:=false;
+        TerminateThread(CommThrd, 0);
+        TerminateThread(RBuffThrd, 0);
+        CloseHandle(CommHandle);
+      end;
   end;
 end;
 
