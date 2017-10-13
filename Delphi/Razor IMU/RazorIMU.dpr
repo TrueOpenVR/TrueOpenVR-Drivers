@@ -233,7 +233,6 @@ begin
 
     DLL_PROCESS_DETACH:
       begin
-        HMDConnected:=false;
         TerminateThread(CommThrd, 0);
         TerminateThread(RBuffThrd, 0);
         CloseHandle(CommHandle);
