@@ -29,7 +29,7 @@ typedef struct _Controller
 
 DLLEXPORT DWORD __stdcall GetHMDData(__out THMD* myHMD);
 DLLEXPORT DWORD __stdcall GetControllersData(__out TController* MyController, __out TController* MyController2);
-DLLEXPORT DWORD __stdcall SetControllerData(__in INT	dwIndex, __in DWORD	MotorSpeed);
+DLLEXPORT DWORD __stdcall SetControllerData(__in INT	dwIndex, __in WORD	MotorSpeed);
 DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex);
 
 
@@ -91,7 +91,7 @@ DLLEXPORT DWORD __stdcall GetControllersData(__out TController* myController, __
 	return 0;
 }
 
-DLLEXPORT DWORD __stdcall SetControllerData(__in INT	dwIndex, __in DWORD	MotorSpeed)
+DLLEXPORT DWORD __stdcall SetControllerData(__in INT	dwIndex, __in WORD	MotorSpeed)
 {
 	return 0;
 }

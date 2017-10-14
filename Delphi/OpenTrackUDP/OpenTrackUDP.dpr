@@ -36,7 +36,7 @@ end;
 
 type
   TUDPServer = class
-  procedure IdUDPServerUDPRead(ASender: TObject;AData: TStream; ABinding: TIdSocketHandle);
+  procedure IdUDPServerUDPRead(ASender: TObject; AData: TStream; ABinding: TIdSocketHandle);
   private
     IdUDPServer: TIdUDPServer;
   public
@@ -103,7 +103,7 @@ begin
   Result:=0;
 end;
 
-function SetControllerData(dwIndex: integer; MotorSpeed: dword): DWORD; stdcall;
+function SetControllerData(dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
 begin
   Result:=0;
 end;
@@ -115,8 +115,6 @@ end;
 
 exports
   GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
-
-{ TUDPServer }
 
 constructor TUDPServer.Create;
 begin

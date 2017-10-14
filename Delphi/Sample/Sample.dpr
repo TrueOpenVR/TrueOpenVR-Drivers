@@ -81,7 +81,7 @@ begin
   Result:=0;
 end;
 
-function SetControllerData(dwIndex: integer; MotorSpeed: dword): DWORD; stdcall;
+function SetControllerData(dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
 begin
   Result:=0;
 end;

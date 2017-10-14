@@ -39,7 +39,7 @@ var
   Error: boolean;
   DriverGetHMDData: function(out myHMD: THMD): DWORD; stdcall;
   DriverGetControllersData: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverSetControllerData: function (dwIndex: integer; MotorSpeed: dword): DWORD; stdcall;
+  DriverSetControllerData: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
   DriverSetCenteringHMD: function (dwIndex: integer): DWORD; stdcall;
   DriverSetCenteringCtrls: function (dwIndex: integer): DWORD; stdcall;
 
@@ -55,7 +55,7 @@ begin
   Result:=DriverGetControllersData(myController, myController2);
 end;
 
-function SetControllerData(dwIndex: integer; MotorSpeed: dword): DWORD; stdcall;
+function SetControllerData(dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
 begin
   Result:=DriverSetControllerData(dwIndex, MotorSpeed);
 end;
