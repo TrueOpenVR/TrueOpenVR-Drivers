@@ -103,7 +103,6 @@ exports
   GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
 
 begin
-  Randomize;
   DllProc:=@DllMain;
   DllProc(DLL_PROCESS_ATTACH);
 end.
