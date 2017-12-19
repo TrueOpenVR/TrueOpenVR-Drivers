@@ -3,11 +3,11 @@
 Ready and samples drivers for VR devices.
 
 ## Drivers
-**OpenTrackUDP** - the driver allows you to connect a lot of different trackers: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Fusion, Razer Hydra, UDP over network (custom for developers), SteamVR). In the OpenTrack settings, you need to change the "Output Interface" to "UDP over network" and the IP address to "127.0.0.1".
+**FreeTrack** - driver that allows head tracking the rotation and positioning of the VR headset with using [OpenTrack](https://github.com/opentrack/opentrack/). In OpenTrack supports the following trackers: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). In the OpenTrack settings, you need to change the "Output interface" to "freetrack 2.0 Enhanced".
 
-**Razor IMU** - driver that allows head tracking the rotation of the VR helmet, using the tracker Razor IMU, based on Arduino and GY-85, with firmware [Razor AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino). COM port number is changing in the "RazorIMU.ini" file, in the TOVR drivers folder.
+**Razor IMU** - driver that allows head tracking the rotation of the VR headset, using the tracker Razor IMU, based on Arduino and GY-85, with firmware [Razor AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino). COM port number is changing in the "RazorIMU.ini" file, in the TOVR drivers folder.
 
-**Splitter** - the driver allows you to connect one driver for the VR headset, and the second driver for the controllers. You can configure the drivers in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the driver names.
+**Splitter** - driver that allows you to connect one driver for the VR headset, and the second driver for the controllers. You can configure the drivers in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
 
 **Sample** - is a sample driver for C++ and Delphi.
 
