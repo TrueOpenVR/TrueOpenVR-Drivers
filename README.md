@@ -11,5 +11,5 @@ Ready and samples drivers for VR devices.
 
 **Sample** - is a sample driver for C++ and Delphi.
 
-**Fake** - driver simulating a VR device.
+**Fake** - driver simulating a VR device (CTRL + ALT + 1, 2, 3, 4, 5 for switching simulation modes).
 
