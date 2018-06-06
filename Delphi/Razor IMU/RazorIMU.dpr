@@ -48,6 +48,7 @@ var
   Kols, TransMask, Errs: DWord;
 
   PacketBuffer: string;
+  PosX, PosY, PosZ: double;
   YawOffset, PitchOffset, RollOffset: double;
   CommPortNum: integer;
   MyRazorIMU: TRazorIMU;
@@ -66,10 +67,28 @@ begin
 end;
 
 function GetHMDData(out myHMD: THMD): DWORD; stdcall;
+const
+  StepPos = 0.0033;
 begin
-  myHMD.X:=0;
-  myHMD.Y:=0;
-  myHMD.Z:=0;
+  //For some games need position tracking which is not have in Razor IMU.
+  if GetAsyncKeyState(VK_NUMPAD8) <> 0 then PosZ:=PosZ - StepPos;
+  if GetAsyncKeyState(VK_NUMPAD2) <> 0 then PosZ:=PosZ + StepPos;
+
+  if GetAsyncKeyState(VK_NUMPAD4) <> 0 then PosX:=PosX - StepPos;
+  if GetAsyncKeyState(VK_NUMPAD6) <> 0 then PosX:=PosX + StepPos;
+
+  if GetAsyncKeyState(VK_PRIOR) <> 0 then PosY:=PosY + StepPos;
+  if GetAsyncKeyState(VK_NEXT) <> 0 then PosY:=PosY - StepPos;
+
+  if GetAsyncKeyState(VK_NUMPAD9) <> 0 then begin
+    PosX:=0;
+    PosY:=0;
+    PosZ:=0;
+  end;
+
+  myHMD.X:=PosX;
+  myHMD.Y:=PosY;
+  myHMD.Z:=PosZ;
 
   myHMD.Yaw:=0;
   myHMD.Pitch:=0;
@@ -208,6 +227,10 @@ begin
         Ini:=TIniFile.Create(GetDriversPath() + 'RazorIMU.ini');
         CommPortNum:=Ini.ReadInteger('Main', 'ComPort', 1);
         Ini.Free;
+
+        PosX:=0;
+        PosY:=0;
+        PosZ:=0;
 
         YawOffset:=0;
         PitchOffset:=0;
