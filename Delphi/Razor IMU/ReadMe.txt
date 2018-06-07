@@ -1,12 +1,12 @@
-Keys: 
+п»їKeys: 
 Numpad 2, Numpad 8, Numpad 4, Numpad 6, Page Up, Page down - change position.
 Numpad 1, 3 - offset rotation for yaw.
 Numpad 7, 9 - offset rotation for roll.
 Numpad subtract - reset position.
 
-Клавиши:
-Numpad 2, Numpad 8, Numpad 4, Numpad 6, Page Up, Page down - изменение позиции.
-Numpad 1, 3 - смещение вращения по yaw.
-Numpad 7, 9 - смещение вращения по roll.
-Numpad минус - сброс позиции.
+РљР»Р°РІРёС€Рё:
+Numpad 2, Numpad 8, Numpad 4, Numpad 6, Page Up, Page down - РёР·РјРµРЅРµРЅРёРµ РїРѕР·РёС†РёРё.
+Numpad 1, 3 - СЃРјРµС‰РµРЅРёРµ РІСЂР°С‰РµРЅРёСЏ РїРѕ yaw.
+Numpad 7, 9 - СЃРјРµС‰РµРЅРёРµ РІСЂР°С‰РµРЅРёСЏ РїРѕ roll.
+Numpad РјРёРЅСѓСЃ - СЃР±СЂРѕСЃ РїРѕР·РёС†РёРё.
 

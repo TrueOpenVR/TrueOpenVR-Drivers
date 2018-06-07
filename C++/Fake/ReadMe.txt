@@ -1,10 +1,10 @@
-Keys for switching simulation modes / Клавиши для переключения режимов имитации:
+п»їKeys for switching simulation modes / РљР»Р°РІРёС€Рё РґР»СЏ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ СЂРµР¶РёРјРѕРІ РёРјРёС‚Р°С†РёРё:
 
-HMD / Шлем: 
+HMD / РЁР»РµРј: 
 CTRL + ALT + 1
 CTRL + ALT + 2
 CTRL + ALT + 3
 
-Controllers / Контроллеры:
+Controllers / РљРѕРЅС‚СЂРѕР»Р»РµСЂС‹:
 CTRL + ALT + 4
 CTRL + ALT + 5
