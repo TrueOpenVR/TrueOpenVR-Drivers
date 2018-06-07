@@ -69,6 +69,7 @@ end;
 function GetHMDData(out myHMD: THMD): DWORD; stdcall;
 const
   StepPos = 0.0033;
+  StepRot = 0.2;
 begin
   //For some games need position tracking which is not have in Razor IMU.
   if GetAsyncKeyState(VK_NUMPAD8) <> 0 then PosZ:=PosZ - StepPos;
@@ -80,7 +81,15 @@ begin
   if GetAsyncKeyState(VK_PRIOR) <> 0 then PosY:=PosY + StepPos;
   if GetAsyncKeyState(VK_NEXT) <> 0 then PosY:=PosY - StepPos;
 
-  if GetAsyncKeyState(VK_NUMPAD9) <> 0 then begin
+  //Yaw fixing
+  if GetAsyncKeyState(VK_NUMPAD1) <> 0 then YawOffset:=YawOffset + StepRot;
+  if GetAsyncKeyState(VK_NUMPAD3) <> 0 then YawOffset:=YawOffset - StepRot;
+  
+  //Roll fixing
+  if GetAsyncKeyState(VK_NUMPAD7) <> 0 then RollOffset:=RollOffset + StepRot;
+  if GetAsyncKeyState(VK_NUMPAD9) <> 0 then RollOffset:=RollOffset - StepRot;
+
+  if GetAsyncKeyState(VK_SUBTRACT) <> 0 then begin
     PosX:=0;
     PosY:=0;
     PosZ:=0;
@@ -97,9 +106,9 @@ begin
   Result:=0;
 
   if HMDConnected then begin
-    myHMD.Yaw:=MyOffset(MyRazorIMU.Yaw, YawOffset);
-    myHMD.Pitch:=MyOffset(MyRazorIMU.Pitch, PitchOffset);
-    myHMD.Roll:=MyOffset(MyRazorIMU.Roll, RollOffset);
+    myHMD.Yaw:=MyOffset(MyRazorIMU.Roll, RollOffset);
+    myHMD.Pitch:=MyOffset(MyRazorIMU.Yaw, YawOffset) * -1;
+    myHMD.Roll:=MyOffset(MyRazorIMU.Pitch, PitchOffset) * -1;
 
     Result:=1;
   end;
