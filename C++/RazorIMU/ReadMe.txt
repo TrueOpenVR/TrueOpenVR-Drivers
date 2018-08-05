@@ -1,4 +1,4 @@
-﻿Razor IMU arduino tracker (Output string)
+﻿Razor IMU arduino tracker (Output binary)
 
 Keys: 
 Numpad 2, Numpad 8, Numpad 4, Numpad 6, Page Up, Page down - change position.
