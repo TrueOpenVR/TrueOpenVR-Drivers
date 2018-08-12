@@ -11,7 +11,7 @@ Ready and samples drivers for VR devices.
 
 **Splitter** - driver that allows to connect one driver for the VR HMD, and the second driver for the controllers. You can configure the drivers in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
 
-**SplitterAdvance** - driver allowing to connect one driver for positioning, another driver for rotation, for each device. You can configure the drivers in the "SplitterAdvance.ini" or "SplitterAdvance64.ini" (for 64 bit architecture) file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
+**SplitterAdvance** - driver allowing to connect one driver for positioning, a second driver for rotation, a third driver for buttons, for each device. You can configure the drivers in the "SplitterAdvance.ini" or "SplitterAdvance64.ini" (for 64 bit architecture) file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
 
 **Sample** - sample driver for C++ and Delphi.
 
