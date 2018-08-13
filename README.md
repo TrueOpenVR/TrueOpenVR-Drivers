@@ -9,7 +9,7 @@ Ready and samples drivers for VR devices.
 
 **PSMoveService** - driver allowing to receive positioning in space, for HMD and controllers, using ping pong balls with LEDs. Need to work [PSMoveService](https://github.com/cboulay/PSMoveService).
 
-**XInput** - âriver allows to receive buttons from the Xbox gamepad for VR controllers.
+**XInput** - driver allows to receive buttons from the Xbox gamepad for VR controllers.
 
 **Splitter** - driver that allows to connect one driver for the VR HMD, and the second driver for the controllers. You can configure the drivers in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
 
