@@ -1,19 +1,23 @@
-﻿[![EN](https://user-images.githubusercontent.com/9499881/33184537-7be87e86-d096-11e7-89bb-f3286f752bc6.png)](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/blob/master/Delphi/SplitterAdvance/blob/master/README.md)
-[![RU](https://user-images.githubusercontent.com/9499881/27683795-5b0fbac6-5cd8-11e7-929c-057833e01fb1.png)](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/blob/master/Delphi/SplitterAdvance/blob/master/README.RU.md)
+﻿[![EN](https://user-images.githubusercontent.com/9499881/33184537-7be87e86-d096-11e7-89bb-f3286f752bc6.png)](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/Delphi/SplitterAdvance)
+[![RU](https://user-images.githubusercontent.com/9499881/27683795-5b0fbac6-5cd8-11e7-929c-057833e01fb1.png)](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/blob/master/Delphi/SplitterAdvance/README.RU.md)
 # Splitter Advance
-Настройка производиться в файле "SplitterAdvance.ini" для 32 битных приложений и "SplitterAdvance64.ini" для 64 битых приложений.<br><br>
+Настройка производиться в файле "SplitterAdvance.ini" для 32 битных приложений и "SplitterAdvance64.ini" для 64 битых приложений.
 
-В "SplitterAdvance.ini" все названия драйверов должны быть 32 битной архитектуры (например, "Emulation.dll").<br>
-В "SplitterAdvance64.ini" все названия драйверов должны быть 64 битной архитектуры (например, "Emulation64.dll").<br><br>
+В "SplitterAdvance.ini" все названия драйверов должны быть 32 битной архитектуры (например, "Emulation.dll").
+
+В "SplitterAdvance64.ini" все названия драйверов должны быть 64 битной архитектуры (например, "Emulation64.dll").
+
 
 В конфигурационном файле имеется 3 раздела (HMD, Controller1 и Controller2). Каждый раздел отвечает за свое устройство.
-
 ## Параметры
-Параметр "Position" отвечает за название позиционного драйвера. Например, можно использовать "PSMoveService.dll" (и "PSMoveService64.dll" для 64 битн.) или "Emulation.dll" (и "Emulation64.dll" для 64 битн.)<br><br>
+Параметр "Position" отвечает за название позиционного драйвера. Например, можно использовать "PSMoveService.dll" (и "PSMoveService64.dll" для 64 битн.) или "Emulation.dll" (и "Emulation64.dll" для 64 битн.)
 
-Параметр "Rotation" отвечает за название драйвера вращения. Если вращение берется из Position драйвера значит указываем тот же драйвер, если нет, то другой драйвер.<br><br>
 
-Параметр "Buttons" отвечает за название драйвера, который будет давать нажатия клавиш. Если клавиши уже присутсвуют в позиционном драйвере или дравере вращения, то можно указываем его же, если же нет, то можно указать другой драйвер, например, "XInput.dll" (и "XInput64.dll" для 64 битн.) и кнопки будут работать от Xbox геймпада.<br><br>
+Параметр "Rotation" отвечает за название драйвера вращения. Если вращение берется из Position драйвера значит указываем тот же драйвер, если нет, то другой драйвер.
+
+
+Параметр "Buttons" отвечает за название драйвера, который будет давать нажатия клавиш. Если клавиши уже присутсвуют в позиционном драйвере или дравере вращения, то можно указываем его же, если же нет, то можно указать другой драйвер, например, "XInput.dll" (и "XInput64.dll" для 64 битн.) и кнопки будут работать от Xbox геймпада.
+
 
 Параметры: "OffsetX", "OffsetY", "OffsetZ" отвечают за смещение позиционного драйвера для каждого устройства.
 
