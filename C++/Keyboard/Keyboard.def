@@ -1,4 +1,4 @@
-LIBRARY   Sample  
+LIBRARY   Keyboard  
 EXPORTS  
    GetHMDData   		@1  
    GetControllersData   @2  
