@@ -8,19 +8,22 @@ Ready and samples drivers for VR devices.
 
 **SplitterAdvance** - driver allowing to connect one driver for positioning, a second driver for rotation, a third driver for buttons, for VR HMD and VR controllers. You can configure the drivers in the "SplitterAdvance.ini" or "SplitterAdvance64.ini" (for 64 bit architecture) file located in the "TrueOpenVR\Drivers" folder, changing the drivers names. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/Delphi/SplitterAdvance).
 
+**SplitterControllers** - driver allowing to connect one driver for one controller and two driver for two controller. You can specify to change the index of the device. You can use it together with the "SplitterAdvance" driver. You can configure the drivers in the file "SplitterConrollers.ini" or "SplitterConrollers64.ini" (for 64-bit architecture) located in the "TrueOpenVR \ Drivers" folder, changing the driver names.
+
+**Splitter** - driver allowing to connect one driver for the VR HMD, and the second driver for the controllers. You can configure the drivers in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
+
 **FreeTrack** - driver allowing head tracking the rotation and positioning of the VR HMD with using [OpenTrack](https://github.com/opentrack/opentrack/). In OpenTrack supports the following trackers: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). In the OpenTrack settings, you need to change the "Output interface" to "freetrack 2.0 Enhanced".
 
 **Razor IMU** - driver allowing head tracking the rotation of the VR HMD, using the tracker Razor IMU, based on Arduino and GY-85, with firmware [Razor AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino). COM port number is changing in the "RazorIMU.ini" file, in the TOVR drivers folder. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/RazorIMU).
 
-**Android Controllers** - driver allowing tracking the rotation and receive buttons for VR controllers. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/AndroidControllers).
-
 **XInput** - driver allowing to receive buttons from the Xbox gamepad for VR controllers. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/XInput).
 
-**Splitter** - driver allowing to connect one driver for the VR HMD, and the second driver for the controllers. You can configure the drivers in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
+**AndroidControllers** - driver allowing tracking the rotation and receive buttons for VR controllers. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/AndroidControllers).
 
 **Keyboard** - driver allowing to change the position of the VR HMD, VR controllers, rotation them. Required for demonstrations and tests. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/Keyboard).
 
-**Sample** - sample driver for C++ and Delphi.
+**Emulation** - driver simulating a VR devices without data. To emulate trackers or devices.
 
-**Fake** - driver simulating a VR devices.
+**Sample** - sample driver for C++ and Delphi. Suitable for tests.
 
+**Fake** - driver simulating a VR devices with data. Suitable for tests.
