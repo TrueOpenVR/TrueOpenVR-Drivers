@@ -45,9 +45,6 @@ type TOffsetPos = record
 end;
 
 var
-  HMDPosDll, HMDRotDll, CtrlsPosDll, CtrlsRotDll, CtrlsBtnsDll: HMODULE;
-  Error: boolean;
-  
   DriverGetHMDPos: function(out myHMD: THMD): DWORD; stdcall;
   DriverGetHMDRot: function(out myHMD: THMD): DWORD; stdcall;
   DriverSetCenteringHMD: function (dwIndex: integer): DWORD; stdcall;
@@ -57,6 +54,10 @@ var
   DriverGetControllersBtns: function(out myController, myController2: TController): DWORD; stdcall;
   DriverSetControllerData: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
   DriverSetCenteringCtrls: function (dwIndex: integer): DWORD; stdcall;
+
+
+  HMDPosDll, HMDRotDll, CtrlsPosDll, CtrlsRotDll, CtrlsBtnsDll: HMODULE;
+  Error: boolean;
 
   HMDUseRot, CtrlsUseRot, CtrlsRotBtns, CtrlsUseBtns: boolean;
 
@@ -309,6 +310,7 @@ begin
           if CtrlsUseRot then begin
             CtrlsRotDll:=LoadLibrary(PChar(CtrlsRotDrvPath));
             @DriverGetControllersRot:=GetProcAddress(CtrlsRotDll, 'GetControllersData');
+            @DriverSetControllerData:=GetProcAddress(CtrlsRotDll, 'SetControllerData');
             @DriverSetCenteringCtrls:=GetProcAddress(CtrlsRotDll, 'SetCentering');
           end;
 
