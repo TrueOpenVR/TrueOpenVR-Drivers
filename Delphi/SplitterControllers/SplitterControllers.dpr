@@ -38,12 +38,6 @@ end;
   Controller = _Controller;
   TController = Controller;
 
-type TOffsetPos = record
-  X: double;
-  Y: double;
-  Z: double;
-end;
-
 var
   Ctrl1Dll, Ctrl2Dll: HMODULE;
   Error: boolean;
