@@ -62,22 +62,7 @@ var
 
   HMDPosOffset, Ctrl1PosOffset, Ctrl2PosOffset: TOffsetPos;
 
-//const
-//  LogFile = 'C:\Users\Rafael\Desktop\log.txt';
-
 {$R *.res}
-
-{procedure WriteLog(Str: string);
-var
-  F: TextFile;
-begin
-  if (LogFile = '') and (FileExists(LogFile) = false) then
-    Exit;
-  AssignFile(F, LogFile);
-  Append(F);
-  Write(F, Str + #13#10);
-  CloseFile(F);
-end;}
 
 function GetHMDData(out myHMD: THMD): DWORD; stdcall;
 var
@@ -290,21 +275,6 @@ begin
 
           if (CtrlsRotBtns = false) and (CtrlsPosDrvPath <> CtrlsBtnsDrvPath) then
             CtrlsUseBtns:=true;
-
-          {if CtrlsUseRot then
-            WriteLog('CtrlsUseRot = true')
-          else
-            WriteLog('CtrlsUseRot = false');
-
-          if CtrlsRotBtns then
-            WriteLog('CtrlsRotBtns = true')
-          else
-            WriteLog('CtrlsRotBtns = false');
-
-          if CtrlsUseBtns then
-            WriteLog('CtrlsUseBtns = true')
-          else
-            WriteLog('CtrlsUseBtns = false');}
 
           Ini.Free;
 
