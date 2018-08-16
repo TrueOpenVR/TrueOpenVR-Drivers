@@ -45,33 +45,39 @@ type TOffsetPos = record
 end;
 
 var
-  HMDPosDll, HMDRotDll, Ctrl1PosDll, Ctrl1RotDll, Ctrl1BtnsDll, Ctrl2PosDll, Ctrl2RotDll, Ctrl2BtnsDll: HMODULE;
+  HMDPosDll, HMDRotDll, CtrlsPosDll, CtrlsRotDll, CtrlsBtnsDll: HMODULE;
   Error: boolean;
   
   DriverGetHMDPos: function(out myHMD: THMD): DWORD; stdcall;
   DriverGetHMDRot: function(out myHMD: THMD): DWORD; stdcall;
   DriverSetCenteringHMD: function (dwIndex: integer): DWORD; stdcall;
 
-  DriverGetController1Pos: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverGetController1Rot: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverGetController1Btns: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverSetController1Data: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
-  DriverSetCenteringCtrls1: function (dwIndex: integer): DWORD; stdcall;
+  DriverGetControllersPos: function(out myController, myController2: TController): DWORD; stdcall;
+  DriverGetControllersRot: function(out myController, myController2: TController): DWORD; stdcall;
+  DriverGetControllersBtns: function(out myController, myController2: TController): DWORD; stdcall;
+  DriverSetControllerData: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
+  DriverSetCenteringCtrls: function (dwIndex: integer): DWORD; stdcall;
 
-  DriverGetController2Pos: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverGetController2Rot: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverGetController2Btns: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverSetController2Data: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
-  DriverSetCenteringCtrls2: function (dwIndex: integer): DWORD; stdcall;
-
-  CtrlIndex1Pos, CtrlIndex1Rot, CtrlIndex1Btns: Byte;
-  CtrlIndex2Pos, CtrlIndex2Rot, CtrlIndex2Btns: Byte;
-
-  HMDUseRot, Ctrl1UseRot, Ctrl1RotBtn, Ctrl1UseBtn, Ctrl2UseRot, Ctrl2RotBtn, Ctrl2UseBtn: boolean;
+  HMDUseRot, CtrlsUseRot, CtrlsRotBtns, CtrlsUseBtns: boolean;
 
   HMDPosOffset, Ctrl1PosOffset, Ctrl2PosOffset: TOffsetPos;
 
+//const
+//  LogFile = 'C:\Users\Rafael\Desktop\log.txt';
+
 {$R *.res}
+
+{procedure WriteLog(Str: string);
+var
+  F: TextFile;
+begin
+  if (LogFile = '') and (FileExists(LogFile) = false) then
+    Exit;
+  AssignFile(F, LogFile);
+  Append(F);
+  Write(F, Str + #13#10);
+  CloseFile(F);
+end;}
 
 function GetHMDData(out myHMD: THMD): DWORD; stdcall;
 var
@@ -127,129 +133,60 @@ begin
     MyStat:=0;
     StatCount:=0;
 
-    //Controller1
-    //Controller1 Position
-    MyStat:=MyStat + DriverGetController1Pos(Ctrl1Pos, Ctrl2Pos);
+    //Position
+    MyStat:=MyStat + DriverGetControllersPos(Ctrl1Pos, Ctrl2Pos);
     StatCount:=StatCount + 1;
 
-    if CtrlIndex1Pos = 1 then
-      myController:=Ctrl1Pos
-    else
-      myController:=Ctrl2Pos;
+    myController:=Ctrl1Pos;
+    myController2:=Ctrl2Pos;
 
-    //Controller1 Rotation
-    if Ctrl1UseRot then begin
-      MyStat:=MyStat + DriverGetController1Rot(Ctrl1Rot, Ctrl2Rot);
+    //Rotation
+    if CtrlsUseRot then begin
+      MyStat:=MyStat + DriverGetControllersRot(Ctrl1Rot, Ctrl2Rot);
       StatCount:=StatCount + 1;
 
-      if CtrlIndex1Rot = 1 then begin
         myController.Yaw:=Ctrl1Rot.Yaw;
         myController.Pitch:=Ctrl1Rot.Pitch;
         myController.Roll:=Ctrl1Rot.Roll;
 
-        if Ctrl1RotBtn then begin
-          myController.Buttons:=Ctrl1Rot.Buttons;
-          myController.Trigger:=Ctrl1Rot.Trigger;
-          myController.ThumbX:=Ctrl1Rot.ThumbX;
-          myController.ThumbY:=Ctrl1Rot.ThumbY;
-        end;
-
-      end else begin
-        myController.Yaw:=Ctrl2Rot.Yaw;
-        myController.Pitch:=Ctrl2Rot.Pitch;
-        myController.Roll:=Ctrl2Rot.Roll;
-
-        if Ctrl1RotBtn then begin
-          myController.Buttons:=Ctrl2Rot.Buttons;
-          myController.Trigger:=Ctrl2Rot.Trigger;
-          myController.ThumbX:=Ctrl2Rot.ThumbX;
-          myController.ThumbY:=Ctrl2Rot.ThumbY;
-        end;
-
-      end;
-    end;
-
-    //Contoller1 buttons
-    if Ctrl1UseBtn then begin
-      MyStat:=MyStat + DriverGetController1Btns(Ctrl1Btns, Ctrl2Btns);
-      StatCount:=StatCount + 1;
-
-      if CtrlIndex1Btns = 1 then begin
-        myController.Buttons:=Ctrl1Btns.Buttons;
-        myController.Trigger:=Ctrl1Btns.Trigger;
-        myController.ThumbX:=Ctrl1Btns.ThumbX;
-        myController.ThumbY:=Ctrl1Btns.ThumbY;
-      end else begin
-        myController.Buttons:=Ctrl2Btns.Buttons;
-        myController.Trigger:=Ctrl2Btns.Trigger;
-        myController.ThumbX:=Ctrl2Btns.ThumbX;
-        myController.ThumbY:=Ctrl2Btns.ThumbY;
-      end;
-    end;
-    //Controoler1 offset pos
-    myController.X:=myController.X + Ctrl1PosOffset.X;
-    myController.Y:=myController.Y + Ctrl1PosOffset.Y;
-    myController.Z:=myController.Z + Ctrl1PosOffset.Z;
-
-    //Controller2
-    //Controller2 Position
-    MyStat:=MyStat + DriverGetController2Pos(Ctrl1Pos, Ctrl2Pos);
-    StatCount:=StatCount + 1;
-
-    if CtrlIndex2Pos = 1 then
-      myController2:=Ctrl1Pos
-    else
-      myController2:=Ctrl2Pos;
-
-    //Controller1 Rotation
-    if Ctrl2UseRot then begin
-      MyStat:=MyStat + DriverGetController2Rot(Ctrl1Rot, Ctrl2Rot);
-      StatCount:=StatCount + 1;
-
-      if CtrlIndex2Rot = 1 then begin
-        myController2.Yaw:=Ctrl1Rot.Yaw;
-        myController2.Pitch:=Ctrl1Rot.Pitch;
-        myController2.Roll:=Ctrl1Rot.Roll;
-
-        if Ctrl2RotBtn then begin
-          myController2.Buttons:=Ctrl1Rot.Buttons;
-          myController2.Trigger:=Ctrl1Rot.Trigger;
-          myController2.ThumbX:=Ctrl1Rot.ThumbX;
-          myController2.ThumbY:=Ctrl1Rot.ThumbY;
-        end;
-
-      end else begin
         myController2.Yaw:=Ctrl2Rot.Yaw;
         myController2.Pitch:=Ctrl2Rot.Pitch;
         myController2.Roll:=Ctrl2Rot.Roll;
 
-        if Ctrl2RotBtn then begin
+
+        if CtrlsRotBtns then begin
+          myController.Buttons:=Ctrl1Rot.Buttons;
+          myController.Trigger:=Ctrl1Rot.Trigger;
+          myController.ThumbX:=Ctrl1Rot.ThumbX;
+          myController.ThumbY:=Ctrl1Rot.ThumbY;
+
           myController2.Buttons:=Ctrl2Rot.Buttons;
           myController2.Trigger:=Ctrl2Rot.Trigger;
           myController2.ThumbX:=Ctrl2Rot.ThumbX;
           myController2.ThumbY:=Ctrl2Rot.ThumbY;
         end;
-
-      end;
     end;
 
-    //Contoller2 buttons
-    if Ctrl2UseBtn then begin
-      MyStat:=MyStat + DriverGetController2Btns(Ctrl1Btns, Ctrl2Btns);
+    //Buttons
+    if CtrlsUseBtns then begin
+      MyStat:=MyStat + DriverGetControllersBtns(Ctrl1Btns, Ctrl2Btns);
       StatCount:=StatCount + 1;
 
-      if CtrlIndex2Btns = 1 then begin
-        myController2.Buttons:=Ctrl1Btns.Buttons;
-        myController2.Trigger:=Ctrl1Btns.Trigger;
-        myController2.ThumbX:=Ctrl1Btns.ThumbX;
-        myController2.ThumbY:=Ctrl1Btns.ThumbY;
-      end else begin
-        myController2.Buttons:=Ctrl2Btns.Buttons;
-        myController2.Trigger:=Ctrl2Btns.Trigger;
-        myController2.ThumbX:=Ctrl2Btns.ThumbX;
-        myController2.ThumbY:=Ctrl2Btns.ThumbY;
-      end;
+      myController.Buttons:=Ctrl1Btns.Buttons;
+      myController.Trigger:=Ctrl1Btns.Trigger;
+      myController.ThumbX:=Ctrl1Btns.ThumbX;
+      myController.ThumbY:=Ctrl1Btns.ThumbY;
+
+      myController2.Buttons:=Ctrl2Btns.Buttons;
+      myController2.Trigger:=Ctrl2Btns.Trigger;
+      myController2.ThumbX:=Ctrl2Btns.ThumbX;
+      myController2.ThumbY:=Ctrl2Btns.ThumbY;
     end;
+
+    //Controoler1 offset pos
+    myController.X:=myController.X + Ctrl1PosOffset.X;
+    myController.Y:=myController.Y + Ctrl1PosOffset.Y;
+    myController.Z:=myController.Z + Ctrl1PosOffset.Z;
 
     //Controoler2 offset pos
     myController2.X:=myController2.X + Ctrl2PosOffset.X;
@@ -266,20 +203,15 @@ end;
 
 function SetControllerData(dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
 begin
-  case dwIndex of
-    1: Result:=DriverSetController1Data(CtrlIndex1Btns, MotorSpeed);
-    2: Result:=DriverSetController2Data(CtrlIndex2Btns, MotorSpeed);
-  else
-    Result:=0;
-  end;
+  Result:=DriverSetControllerData(dwIndex, MotorSpeed);
 end;
 
 function SetCentering(dwIndex: integer): DWORD; stdcall;
 begin
   case dwIndex of
     0: Result:=DriverSetCenteringHMD(0);
-    1: Result:=DriverSetCenteringCtrls1(CtrlIndex1Rot);
-    2: Result:=DriverSetCenteringCtrls2(CtrlIndex2Rot);
+    1: Result:=DriverSetCenteringCtrls(1);
+    2: Result:=DriverSetCenteringCtrls(2);
     else
       Result:=0;
   end;
@@ -287,7 +219,7 @@ end;
 
 procedure DllMain(Reason: integer);
 var
-  Ini: TIniFile; Reg: TRegistry; HMDPosDrvPath, HMDRotDrvPath, Ctrl1PosDrvPath, Ctrl1RotDrvPath, Ctrl1BtnsDrvPath, Ctrl2PosDrvPath, Ctrl2RotDrvPath, Ctrl2BtnsDrvPath: string;
+  Ini: TIniFile; Reg: TRegistry; HMDPosDrvPath, HMDRotDrvPath, CtrlsPosDrvPath, CtrlsRotDrvPath, CtrlsBtnsDrvPath: string;
 begin
   case Reason of
     DLL_PROCESS_ATTACH:
@@ -304,12 +236,9 @@ begin
           Ini:=TIniFile.Create(Reg.ReadString('Drivers') + 'SplitterAdvance.ini');
 
           HMDUseRot:=false;
-          Ctrl1UseRot:=false;
-          Ctrl1RotBtn:=false;
-          Ctrl1UseBtn:=false;
-          Ctrl2UseRot:=false;
-          Ctrl1RotBtn:=false;
-          Ctrl2UseBtn:=false;
+          CtrlsUseRot:=false;
+          CtrlsRotBtns:=false;
+          CtrlsUseBtns:=false;
 
           //HMD
           HMDPosDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('HMD', 'Position', '');
@@ -329,7 +258,7 @@ begin
           //Don't load the library more than once if the same
           if HMDPosDrvPath <> HMDRotDrvPath then HMDUseRot:=true;
 
-          //Controller1
+          //Controllers pos offset
           try
             Ctrl1PosOffset.X:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetX', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             Ctrl1PosOffset.Y:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetY', '0'), '.', DecimalSeparator, [rfReplaceAll]));
@@ -340,23 +269,6 @@ begin
             Ctrl1PosOffset.Z:=0;
           end;
 
-          CtrlIndex1Pos:=Ini.ReadInteger('Controller1', 'PosIndex', 1);
-          CtrlIndex1Rot:=Ini.ReadInteger('Controller1', 'RotIndex', 1);
-          CtrlIndex1Btns:=Ini.ReadInteger('Controller1', 'BtnsIndex', 1);
-
-          Ctrl1PosDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controller1', 'Position', '');
-          Ctrl1RotDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controller1', 'Rotation', '');
-          Ctrl1BtnsDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controller1', 'Buttons', '');
-
-          //Don't load the library more than once if the same
-          if Ctrl1PosDrvPath <> Ctrl1RotDrvPath then Ctrl1UseRot:=true;
-
-          if (Ctrl1UseRot) and (Ctrl1RotDrvPath = Ctrl1BtnsDrvPath) then Ctrl1RotBtn:=true;
-
-          if (Ctrl1RotBtn = false) and (Ctrl1PosDrvPath <> Ctrl1BtnsDrvPath) then
-            Ctrl1UseBtn:=true;
-
-          //Controller2
           try
             Ctrl2PosOffset.X:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetX', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             Ctrl2PosOffset.Y:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetY', '0'), '.', DecimalSeparator, [rfReplaceAll]));
@@ -367,31 +279,40 @@ begin
             Ctrl2PosOffset.Z:=0;
           end;
 
-          CtrlIndex2Pos:=Ini.ReadInteger('Controller2', 'PosIndex', 2);
-          CtrlIndex2Rot:=Ini.ReadInteger('Controller2', 'RotIndex', 2);
-          CtrlIndex2Btns:=Ini.ReadInteger('Controller2', 'BtnsIndex', 2);
+          CtrlsPosDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controllers', 'Position', '');
+          CtrlsRotDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controllers', 'Rotation', '');
+          CtrlsBtnsDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controllers', 'Buttons', '');
 
-          Ctrl2PosDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controller2', 'Position', '');
-          Ctrl2RotDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controller2', 'Rotation', '');
-          Ctrl2BtnsDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controller2', 'Buttons', '');
+          //Don't load the library more than once if the same
+          if CtrlsPosDrvPath <> CtrlsRotDrvPath then CtrlsUseRot:=true;
 
-          if Ctrl2PosDrvPath <> Ctrl2RotDrvPath then Ctrl2UseRot:=true;
+          if (CtrlsUseRot) and (CtrlsRotDrvPath = CtrlsBtnsDrvPath) then CtrlsRotBtns:=true;
 
-          if (Ctrl2UseRot) and (Ctrl2RotDrvPath = Ctrl2BtnsDrvPath) then Ctrl2RotBtn:=true;
+          if (CtrlsRotBtns = false) and (CtrlsPosDrvPath <> CtrlsBtnsDrvPath) then
+            CtrlsUseBtns:=true;
 
-          if (Ctrl2RotBtn = false) and (Ctrl2PosDrvPath <> Ctrl2BtnsDrvPath) then
-            Ctrl2UseBtn:=true;
+          {if CtrlsUseRot then
+            WriteLog('CtrlsUseRot = true')
+          else
+            WriteLog('CtrlsUseRot = false');
+
+          if CtrlsRotBtns then
+            WriteLog('CtrlsRotBtns = true')
+          else
+            WriteLog('CtrlsRotBtns = false');
+
+          if CtrlsUseBtns then
+            WriteLog('CtrlsUseBtns = true')
+          else
+            WriteLog('CtrlsUseBtns = false');}
 
           Ini.Free;
 
           if (FileExists(HMDPosDrvPath) = false) or
               (FileExists(HMDRotDrvPath) = false) or
-              (FileExists(Ctrl1PosDrvPath) = false) or
-              (FileExists(Ctrl1RotDrvPath) = false) or
-              (FileExists(Ctrl1BtnsDrvPath) = false) or
-              (FileExists(Ctrl2PosDrvPath) = false) or
-              (FileExists(Ctrl2RotDrvPath) = false) or
-              (FileExists(Ctrl2BtnsDrvPath) = false) then Error:=true;
+              (FileExists(CtrlsPosDrvPath) = false) or
+              (FileExists(CtrlsRotDrvPath) = false) or
+              (FileExists(CtrlsBtnsDrvPath) = false) then Error:=true;
 
           Reg.CloseKey;
         end;
@@ -409,42 +330,23 @@ begin
           end else
             @DriverSetCenteringHMD:=GetProcAddress(HMDPosDll, 'SetCentering');
 
-          //Controller1
-          Ctrl1PosDll:=LoadLibrary(PChar(Ctrl1PosDrvPath));
-          @DriverGetController1Pos:=GetProcAddress(Ctrl1PosDll, 'GetControllersData');
-          @DriverSetController1Data:=GetProcAddress(Ctrl1PosDll, 'SetControllerData');
-          @DriverSetCenteringCtrls1:=GetProcAddress(Ctrl1PosDll, 'SetCentering');
+          //Controllers
+          CtrlsPosDll:=LoadLibrary(PChar(CtrlsPosDrvPath));
+          @DriverGetControllersPos:=GetProcAddress(CtrlsPosDll, 'GetControllersData');
+          @DriverSetControllerData:=GetProcAddress(CtrlsPosDll, 'SetControllerData');
+          @DriverSetCenteringCtrls:=GetProcAddress(CtrlsPosDll, 'SetCentering');
 
-          if Ctrl1UseRot then begin
-            Ctrl1RotDll:=LoadLibrary(PChar(Ctrl1RotDrvPath));
-            @DriverGetController1Rot:=GetProcAddress(Ctrl1RotDll, 'GetControllersData');
-            @DriverSetCenteringCtrls1:=GetProcAddress(Ctrl1RotDll, 'SetCentering');
+          if CtrlsUseRot then begin
+            CtrlsRotDll:=LoadLibrary(PChar(CtrlsRotDrvPath));
+            @DriverGetControllersRot:=GetProcAddress(CtrlsRotDll, 'GetControllersData');
+            @DriverSetCenteringCtrls:=GetProcAddress(CtrlsRotDll, 'SetCentering');
           end;
 
-          if Ctrl1UseBtn then begin
-            Ctrl1BtnsDll:=LoadLibrary(PChar(Ctrl1BtnsDrvPath));
-            @DriverGetController1Btns:=GetProcAddress(Ctrl1BtnsDll, 'GetControllersData');
-            @DriverSetController1Data:=GetProcAddress(Ctrl1BtnsDll, 'SetControllerData');
+          if CtrlsUseBtns then begin
+            CtrlsBtnsDll:=LoadLibrary(PChar(CtrlsBtnsDrvPath));
+            @DriverGetControllersBtns:=GetProcAddress(CtrlsBtnsDll, 'GetControllersData');
+            @DriverSetControllerData:=GetProcAddress(CtrlsBtnsDll, 'SetControllerData');
           end;
-
-          //Controller2
-          Ctrl2PosDll:=LoadLibrary(PChar(Ctrl2PosDrvPath));
-          @DriverGetController2Pos:=GetProcAddress(Ctrl2PosDll, 'GetControllersData');
-          @DriverSetController2Data:=GetProcAddress(Ctrl2PosDll, 'SetControllerData');
-          @DriverSetCenteringCtrls2:=GetProcAddress(Ctrl2PosDll, 'SetCentering');
-
-          if Ctrl2UseRot then begin
-            Ctrl2RotDll:=LoadLibrary(PChar(Ctrl2RotDrvPath));
-            @DriverGetController2Rot:=GetProcAddress(Ctrl2RotDll, 'GetControllersData');
-            @DriverSetCenteringCtrls2:=GetProcAddress(Ctrl2RotDll, 'SetCentering');
-          end;
-
-          if Ctrl2UseBtn then begin
-            Ctrl2BtnsDll:=LoadLibrary(PChar(Ctrl2BtnsDrvPath));
-            @DriverGetController2Btns:=GetProcAddress(Ctrl2BtnsDll, 'GetControllersData');
-            @DriverSetController2Data:=GetProcAddress(Ctrl2BtnsDll, 'SetControllerData');
-          end;
-
 
         end;
         Reg.Free;
@@ -459,23 +361,14 @@ begin
         if HMDUseRot then
           FreeLibrary(HMDRotDll);
 
-        //Controller1 dlls
-        FreeLibrary(Ctrl1PosDll);
+        //Controllers dlls
+        FreeLibrary(CtrlsPosDll);
 
-        if Ctrl2UseRot then
-          FreeLibrary(Ctrl1RotDll);
+        if CtrlsUseRot then
+          FreeLibrary(CtrlsRotDll);
 
-        if Ctrl1UseBtn then
-          FreeLibrary(Ctrl1BtnsDll);
-
-        //Controller2 dlls
-        FreeLibrary(Ctrl2PosDll);
-
-        if Ctrl2UseRot then
-          FreeLibrary(Ctrl2RotDll);
-
-        if Ctrl2UseBtn then
-          FreeLibrary(Ctrl2BtnsDll);
+        if CtrlsUseBtns then
+          FreeLibrary(CtrlsBtnsDll);
       end;
   end;
 end;

@@ -6,7 +6,7 @@
 ## Драйверы
 **PSMoveService** - драйвер позволяющий получать позиционирование в пространстве, для шлема и контроллеров, с помощью пинг понг шариков со светодиодами. Для работы необходим [PSMoveService](https://github.com/cboulay/PSMoveService). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
 
-**SplitterAdvance** - драйвер позволяющий подключить один драйвер для позиционирования, второй драйвер для вращения, третий драйвер для кнопок, для каждого устройства. Настроить драйверы можно в файле "Splitter.ini" или "Splitter64.ini" (для 64 битной архитектуры), находяющийся в папке "TrueOpenVR\Drivers", изменив названия драйверов. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/blob/master/Delphi/SplitterAdvance/README.RU.md).
+**SplitterAdvance** - драйвер позволяющий подключить один драйвер для позиционирования, второй драйвер для вращения, третий драйвер для кнопок, для VR шлема и VR контроллеров. Настроить драйверы можно в файле "Splitter.ini" или "Splitter64.ini" (для 64 битной архитектуры), находяющийся в папке "TrueOpenVR\Drivers", изменив названия драйверов. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/blob/master/Delphi/SplitterAdvance/README.RU.md).
 
 **FreeTrack** - драйвер позволяющий отслеживать вращение и позиционирование VR шлема, с помощью [OpenTrack](https://github.com/opentrack/opentrack/). В OpenTrack поддерживаются следующие трекеры: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). В настройках OpenTrack нужно изменить "Выходной интерфейс" на "freetrack 2.0 Enhanced".
 

@@ -6,7 +6,7 @@ Ready and samples drivers for VR devices.
 ## Drivers
 **PSMoveService** - driver allowing to receive positioning in space, for HMD and controllers, using ping pong balls with LEDs. Need to work [PSMoveService](https://github.com/cboulay/PSMoveService). Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
 
-**SplitterAdvance** - driver allowing to connect one driver for positioning, a second driver for rotation, a third driver for buttons, for each device. You can configure the drivers in the "SplitterAdvance.ini" or "SplitterAdvance64.ini" (for 64 bit architecture) file located in the "TrueOpenVR\Drivers" folder, changing the drivers names. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/Delphi/SplitterAdvance).
+**SplitterAdvance** - driver allowing to connect one driver for positioning, a second driver for rotation, a third driver for buttons, for VR HMD and VR controllers. You can configure the drivers in the "SplitterAdvance.ini" or "SplitterAdvance64.ini" (for 64 bit architecture) file located in the "TrueOpenVR\Drivers" folder, changing the drivers names. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/Delphi/SplitterAdvance).
 
 **FreeTrack** - driver allowing head tracking the rotation and positioning of the VR HMD with using [OpenTrack](https://github.com/opentrack/opentrack/). In OpenTrack supports the following trackers: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). In the OpenTrack settings, you need to change the "Output interface" to "freetrack 2.0 Enhanced".
 
