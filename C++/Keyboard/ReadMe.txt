@@ -1,6 +1,4 @@
-﻿XInput - Xbox gamepad
-
-Keys:
+﻿Keys:
 Numpad 2, Numpad 8, Numpad 4, Numpad 6, Page Up, Page down - change position.
 Numpad 1, 3 - rotation.
  
