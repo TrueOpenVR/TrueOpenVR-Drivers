@@ -23,6 +23,8 @@ The "Buttons" parameter is responsible for the name of the button driver. If the
 
 Parameters: "OffsetX", "OffsetY", "OffsetZ" are responsible for offsetting the position driver for each device.
 
+
+Parameters: "OffsetYaw", "OffsetPitch", "OffsetRoll" are responsible for the rotation of the driver rotation for each device.
 ## Examples
 For example, we want to use Ping Pong balls with LED and PS3 camera (PSMoveService) to use for positioning, for the rotation of the helmet we have Arduino with the rotation sensor, and for rotating the controllers and the buttons for 2 more arduino, the configuration file will be as follows:
 ```

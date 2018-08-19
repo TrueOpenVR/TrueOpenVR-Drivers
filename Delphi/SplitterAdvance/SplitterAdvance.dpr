@@ -44,6 +44,12 @@ type TOffsetPos = record
   Z: double;
 end;
 
+type TOffsetYPR = record
+  Yaw: double;
+  Pitch: double;
+  Roll: double;
+end;
+
 var
   DriverGetHMDPos: function(out myHMD: THMD): DWORD; stdcall;
   DriverGetHMDRot: function(out myHMD: THMD): DWORD; stdcall;
@@ -62,8 +68,19 @@ var
   HMDUseRot, CtrlsUseRot, CtrlsRotBtns, CtrlsUseBtns: boolean;
 
   HMDPosOffset, Ctrl1PosOffset, Ctrl2PosOffset: TOffsetPos;
+  HMDYPROffset, Ctrl1YPROffset, Ctrl2YPROffset: TOffsetYPR;
 
 {$R *.res}
+
+function fmod(x, y: double): double;
+begin
+  Result:=y * Frac(x / y);
+end;
+
+function MyOffset(f, f2: double): double;
+begin
+  Result:=fmod(f - f2, 180);
+end;
 
 function GetHMDData(out myHMD: THMD): DWORD; stdcall;
 var
@@ -90,6 +107,11 @@ begin
     myHMD.X:=myHMD.X + HMDPosOffset.X;
     myHMD.Y:=myHMD.Y + HMDPosOffset.Y;
     myHMD.Z:=myHMD.Z + HMDPosOffset.Z;
+
+    //HMD offset ypr
+    myHMD.Yaw:=MyOffset(myHMD.Yaw, HMDYPROffset.Yaw);
+    myHMD.Pitch:=MyOffset(myHMD.Pitch, HMDYPROffset.Pitch);
+    myHMD.Roll:=MyOffset(myHMD.Roll, HMDYPROffset.Roll);
 
     if MyStat = StatCount then
       Result:=1
@@ -174,10 +196,20 @@ begin
     myController.Y:=myController.Y + Ctrl1PosOffset.Y;
     myController.Z:=myController.Z + Ctrl1PosOffset.Z;
 
+    //Controller offset ypr
+    myController.Yaw:=MyOffset(myController.Yaw, Ctrl1YPROffset.Yaw);
+    myController.Pitch:=MyOffset(myController.Pitch, Ctrl1YPROffset.Pitch);
+    myController.Roll:=MyOffset(myController.Roll, Ctrl1YPROffset.Roll);
+
     //Controoler2 offset pos
     myController2.X:=myController2.X + Ctrl2PosOffset.X;
     myController2.Y:=myController2.Y + Ctrl2PosOffset.Y;
     myController2.Z:=myController2.Z + Ctrl2PosOffset.Z;
+
+    //Controller offset ypr
+    myController2.Yaw:=MyOffset(myController2.Yaw, Ctrl2YPROffset.Yaw);
+    myController2.Pitch:=MyOffset(myController2.Pitch, Ctrl2YPROffset.Pitch);
+    myController2.Roll:=MyOffset(myController2.Roll, Ctrl2YPROffset.Roll);
 
     if MyStat = StatCount then
       Result:=1
@@ -235,34 +267,58 @@ begin
             HMDPosOffset.X:=StrToFloat(StringReplace(Ini.ReadString('HMD', 'OffsetX', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             HMDPosOffset.Y:=StrToFloat(StringReplace(Ini.ReadString('HMD', 'OffsetY', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             HMDPosOffset.Z:=StrToFloat(StringReplace(Ini.ReadString('HMD', 'OffsetZ', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+
+            HMDYPROffset.Yaw:=StrToFloat(StringReplace(Ini.ReadString('HMD', 'OffsetYaw', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+            HMDYPROffset.Pitch:=StrToFloat(StringReplace(Ini.ReadString('HMD', 'OffsetPitch', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+            HMDYPROffset.Roll:=StrToFloat(StringReplace(Ini.ReadString('HMD', 'OffsetRoll', '0'), '.', DecimalSeparator, [rfReplaceAll]));
           except
             HMDPosOffset.X:=0;
             HMDPosOffset.Y:=0;
             HMDPosOffset.Z:=0;
+
+            HMDYPROffset.Yaw:=0;
+            HMDYPROffset.Pitch:=0;
+            HMDYPROffset.Roll:=0;
           end;
 
           //Don't load the library more than once if the same
           if HMDPosDrvPath <> HMDRotDrvPath then HMDUseRot:=true;
 
-          //Controllers pos offset
+          //Controllers pos and ypr offset
           try
             Ctrl1PosOffset.X:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetX', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             Ctrl1PosOffset.Y:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetY', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             Ctrl1PosOffset.Z:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetZ', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+
+            Ctrl1YPROffset.Yaw:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetYaw', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+            Ctrl1YPROffset.Pitch:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetPitch', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+            Ctrl1YPROffset.Roll:=StrToFloat(StringReplace(Ini.ReadString('Controller1', 'OffsetRoll', '0'), '.', DecimalSeparator, [rfReplaceAll]));
           except
             Ctrl1PosOffset.X:=0;
             Ctrl1PosOffset.Y:=0;
             Ctrl1PosOffset.Z:=0;
+
+            Ctrl1YPROffset.Yaw:=0;
+            Ctrl1YPROffset.Pitch:=0;
+            Ctrl1YPROffset.Roll:=0;
           end;
 
           try
             Ctrl2PosOffset.X:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetX', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             Ctrl2PosOffset.Y:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetY', '0'), '.', DecimalSeparator, [rfReplaceAll]));
             Ctrl2PosOffset.Z:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetZ', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+
+            Ctrl2YPROffset.Yaw:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetYaw', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+            Ctrl2YPROffset.Pitch:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetPitch', '0'), '.', DecimalSeparator, [rfReplaceAll]));
+            Ctrl2YPROffset.Roll:=StrToFloat(StringReplace(Ini.ReadString('Controller2', 'OffsetRoll', '0'), '.', DecimalSeparator, [rfReplaceAll]));
           except
             Ctrl2PosOffset.X:=0;
             Ctrl2PosOffset.Y:=0;
             Ctrl2PosOffset.Z:=0;
+
+            Ctrl2YPROffset.Yaw:=0;
+            Ctrl2YPROffset.Pitch:=0;
+            Ctrl2YPROffset.Roll:=0;
           end;
 
           CtrlsPosDrvPath:=Reg.ReadString('Drivers') + Ini.ReadString('Controllers', 'Position', '');
