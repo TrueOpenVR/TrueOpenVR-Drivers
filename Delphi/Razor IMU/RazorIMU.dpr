@@ -56,11 +56,6 @@ var
 
 {$R *.res}
 
-function fmod(x, y: double): double;
-begin
-  Result:=y * Frac(x / y);
-end;
-
 function MyOffset(f, f2: double): double;
 begin
   f:=f - f2;
