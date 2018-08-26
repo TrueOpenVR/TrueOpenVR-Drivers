@@ -44,7 +44,6 @@ std::thread *pRRthread = NULL;
 void RazorIMURead()
 {
 	DWORD bytesRead;
-	memset(&RazorIMU, 0, sizeof(RazorIMU));
 
 	while (HMDConnected) {
 		ReadFile(hSerial, &RazorIMU, sizeof(RazorIMU), &bytesRead, 0);
@@ -88,8 +87,7 @@ void RazorInit(){
 				if (SetCommState(hSerial, &dcbSerialParams))
 				{
 					HMDConnected = true;
-					unsigned long ulCommErr = 0;
-					ClearCommError(hSerial, &ulCommErr, NULL);
+					PurgeComm(hSerial, PURGE_TXCLEAR | PURGE_RXCLEAR);
 					pRRthread = new std::thread(RazorIMURead);
 				}
 			}
@@ -97,9 +95,16 @@ void RazorInit(){
 	}
 }
 
-double MyOffset(float f, float f2)
+float MyOffset(float f, float f2)
 {
-	return fmod(f - f2, 180);
+	f -= f2;
+	if (f < -180) {
+		f += 360;
+	} else if (f > 180) {
+		f -= 360;
+	}
+
+	return f;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -117,8 +122,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 				delete pRRthread;
 				pRRthread = nullptr;
 			}
-			unsigned long ulCommErr = 0;
-			ClearCommError(hSerial, &ulCommErr, NULL);
 			CloseHandle(hSerial);
 		}
 		break;
@@ -128,7 +131,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 }
 
 #define StepPos 0.0033;
-#define StepRot 0.2;
+#define StepRot 0.1;
 
 DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
 {
@@ -139,22 +142,22 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
 
 	if (HMDConnected) {
 
-		if ((GetAsyncKeyState(VK_NUMPAD8) & 0x8000) != 0) fPos[2] = fPos[2] - StepPos;
-		if ((GetAsyncKeyState(VK_NUMPAD2) & 0x8000) != 0) fPos[2] = fPos[2] + StepPos;
+		if ((GetAsyncKeyState(VK_NUMPAD8) & 0x8000) != 0) fPos[2] -= StepPos;
+		if ((GetAsyncKeyState(VK_NUMPAD2) & 0x8000) != 0) fPos[2] += StepPos;
 
-		if ((GetAsyncKeyState(VK_NUMPAD4) & 0x8000) != 0) fPos[0] = fPos[0] - StepPos;
-		if ((GetAsyncKeyState(VK_NUMPAD6) & 0x8000) != 0) fPos[0] = fPos[0] + StepPos;
+		if ((GetAsyncKeyState(VK_NUMPAD4) & 0x8000) != 0) fPos[0] -= StepPos;
+		if ((GetAsyncKeyState(VK_NUMPAD6) & 0x8000) != 0) fPos[0] += StepPos;
 
-		if ((GetAsyncKeyState(VK_PRIOR) & 0x8000) != 0) fPos[1] = fPos[1] + StepPos;
-		if ((GetAsyncKeyState(VK_NEXT) & 0x8000) != 0) fPos[1] = fPos[1] - StepPos;
+		if ((GetAsyncKeyState(VK_PRIOR) & 0x8000) != 0) fPos[1] += StepPos;
+		if ((GetAsyncKeyState(VK_NEXT) & 0x8000) != 0) fPos[1] -= StepPos;
 
 		//Yaw fixing
-		if ((GetAsyncKeyState(VK_NUMPAD1) & 0x8000) != 0) yprOffset[0] = yprOffset[0] + StepRot;
-		if ((GetAsyncKeyState(VK_NUMPAD3) & 0x8000) != 0) yprOffset[0] = yprOffset[0] - StepRot;
+		if ((GetAsyncKeyState(VK_NUMPAD1) & 0x8000) != 0 && yprOffset[0] < 180) yprOffset[0] += StepRot;
+		if ((GetAsyncKeyState(VK_NUMPAD3) & 0x8000) != 0 && yprOffset[0] > -180) yprOffset[0] -= StepRot;
 
 		//Roll fixing
-		if ((GetAsyncKeyState(VK_NUMPAD7) & 0x8000) != 0) yprOffset[2] = yprOffset[2] + StepRot;
-		if ((GetAsyncKeyState(VK_NUMPAD9) & 0x8000) != 0) yprOffset[2] = yprOffset[2] - StepRot;
+		if ((GetAsyncKeyState(VK_NUMPAD7) & 0x8000) != 0 && yprOffset[2] < 180) yprOffset[2] += StepRot;
+		if ((GetAsyncKeyState(VK_NUMPAD9) & 0x8000) != 0 && yprOffset[2] > -180) yprOffset[2] -= StepRot;
 
 		if ((GetAsyncKeyState(VK_SUBTRACT) & 0x8000) != 0) {
 			fPos[0] = 0;

@@ -144,9 +144,17 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	return true;
 }
 
-double MyOffset(float f, double f2)
+double MyOffset(float f, float f2)
 {
-	return fmod(f - f2, 180);
+	f -= f2;
+	if (f < -180) {
+		f += 360;
+	}
+	else if (f > 180) {
+		f -= 360;
+	}
+
+	return f;
 }
 
 double RadToDeg(float r) {

@@ -63,13 +63,20 @@ end;
 
 function MyOffset(f, f2: double): double;
 begin
-  Result:=fmod(f - f2, 180);
+  f:=f - f2;
+
+  if (f < -180) then
+    f:=f + 360
+  else if (f > 180) then
+    f:=f - 360;
+
+	Result:=f;
 end;
 
 function GetHMDData(out myHMD: THMD): DWORD; stdcall;
 const
   StepPos = 0.0033;
-  StepRot = 0.2;
+  StepRot = 0.1;
 begin
   //For some games need position tracking which is not have in Razor IMU.
   if GetAsyncKeyState(VK_NUMPAD8) <> 0 then PosZ:=PosZ - StepPos;
