@@ -1,0 +1,6 @@
+LIBRARY   RazerHydra  
+EXPORTS  
+   GetHMDData   		@1  
+   GetControllersData   @2  
+   SetControllerData	@3  
+   SetCentering			@4  

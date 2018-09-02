@@ -4,7 +4,9 @@
 Готовые и демонстрационные драйверы для VR устройств.
 
 ## Драйверы
-**PSMoveService** - драйвер позволяющий получать позиционирование в пространстве, для шлема и контроллеров, с помощью пинг понг шариков со светодиодами. Для работы необходим [PSMoveService](https://github.com/cboulay/PSMoveService). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
+**PSMoveService** - драйвер позволяющий получать позиционирование в пространстве, для шлема и контроллеров, с помощью пинг понг шариков со светодиодами. Для работы необходим ["PSMoveService"](https://github.com/cboulay/PSMoveService). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
+
+**RazerHydra** - драйвер позволяющий получать использовать контроллеры Razer Hydra. Для работы необходимо установить "SixenceSDK" ("Additionally\RazerHydra\Install.bat"). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/RazerHydra).
 
 **ArduinoControllers** - драйвер позволяющий отслеживать вращение и получать кнопки для VR контроллеров. Вместе с пинг понг шариками, со светодиодами, можно получить полноценные VR контроллеры (запускать через "SpliiterAdvance" драйвер, вместе с "PSMoveService"). Номера COM-портов изменяются в файле "ArduinoControllers.ini", в папке драйверов TOVR. Прошивку для Arduino можно найти [здесь](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Arduino/Controller.ino). Подробнее о создании контроллеров [тут](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Controllers.RU.md).
 
