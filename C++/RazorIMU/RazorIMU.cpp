@@ -35,8 +35,11 @@ DLLEXPORT DWORD __stdcall GetControllersData(__out TController *MyController, __
 DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed);
 DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex);
 
+#define TOVR_SUCCESS 1
+#define TOVR_FAILURE 0
+
 HANDLE hSerial;
-bool HMDConnected = false, RInit = false;
+bool HMDConnected = false, RazorInit = false, HMDInitCentring = false;
 float RazorIMU[3], yprOffset[3]; //yaw, pitch, roll
 double fPos[3];
 std::thread *pRRthread = NULL;
@@ -47,10 +50,15 @@ void RazorIMURead()
 
 	while (HMDConnected) {
 		ReadFile(hSerial, &RazorIMU, sizeof(RazorIMU), &bytesRead, 0);
+		if (HMDInitCentring == false)
+			if (RazorIMU[0] != 0 || RazorIMU[1] != 0 || RazorIMU[2] != 0) {
+				SetCentering(0);
+				HMDInitCentring = true;
+			}	
 	}
 }
 
-void RazorInit(){
+void RazorStart(){
 	CRegKey key;
 	TCHAR _driversPath[MAX_PATH];
 	LONG status = key.Open(HKEY_CURRENT_USER, _T("Software\\TrueOpenVR"));
@@ -95,7 +103,7 @@ void RazorInit(){
 	}
 }
 
-float MyOffset(float f, float f2)
+float OffsetYPR(float f, float f2)
 {
 	f -= f2;
 	if (f < -180) {
@@ -135,9 +143,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
 {
-	if (RInit == false) {
-		RInit = true;
-		RazorInit();
+	if (RazorInit == false) {
+		RazorInit = true;
+		RazorStart();
 	}
 
 	if (HMDConnected) {
@@ -168,11 +176,11 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
 		myHMD->X = fPos[0];
 		myHMD->Y = fPos[1];
 		myHMD->Z = fPos[2];
-		myHMD->Yaw = MyOffset(RazorIMU[2], yprOffset[2]);
-		myHMD->Pitch = MyOffset(RazorIMU[0], yprOffset[0]) * -1;
-		myHMD->Roll = MyOffset(RazorIMU[1], yprOffset[1]) * -1;
+		myHMD->Yaw = OffsetYPR(RazorIMU[2], yprOffset[2]);
+		myHMD->Pitch = OffsetYPR(RazorIMU[0], yprOffset[0]) * -1;
+		myHMD->Roll = OffsetYPR(RazorIMU[1], yprOffset[1]) * -1;
 
-		return 1;
+		return TOVR_SUCCESS;
 	}
 	else {
 		myHMD->X = 0;
@@ -187,7 +195,7 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
 		myHMD->Pitch = 0;
 		myHMD->Roll = 0;
 
-		return 0;
+		return TOVR_FAILURE;
 	}
 }
 
@@ -221,12 +229,12 @@ DLLEXPORT DWORD __stdcall GetControllersData(__out TController *myController, __
 	myController2->ThumbX = 0;
 	myController2->ThumbY = 0;
 
-	return 0;
+	return TOVR_FAILURE;
 }
 
 DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed)
 {
-	return 0;
+	return TOVR_FAILURE;
 }
 
 DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex)
@@ -236,10 +244,10 @@ DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex)
 		yprOffset[1] = RazorIMU[1];
 		yprOffset[2] = RazorIMU[2];
 
-		return 1;
+		return TOVR_SUCCESS;
 	}
 	else {
-		return 0;
+		return TOVR_FAILURE;
 	}
 
 }
