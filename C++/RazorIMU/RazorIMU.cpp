@@ -24,25 +24,35 @@ typedef struct _Controller
 	double	Yaw;
 	double	Pitch;
 	double	Roll;
-	WORD	Buttons;
-	BYTE	Trigger;
-	SHORT	ThumbX;
-	SHORT	ThumbY;
+	unsigned short	Buttons;
+	float	Trigger;
+	float	AxisX;
+	float	AxisY;
 } TController, *PController;
 
-DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD);
-DLLEXPORT DWORD __stdcall GetControllersData(__out TController *MyController, __out TController *MyController2);
-DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed);
-DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex);
-
-#define TOVR_SUCCESS 1
-#define TOVR_FAILURE 0
+#define TOVR_SUCCESS 0
+#define TOVR_FAILURE 1
 
 HANDLE hSerial;
 bool HMDConnected = false, RazorInit = false, HMDInitCentring = false;
 float RazorIMU[3], yprOffset[3]; //yaw, pitch, roll
 double fPos[3];
 std::thread *pRRthread = NULL;
+
+DWORD SetCentering(__in int dwIndex)
+{
+	if (HMDConnected && dwIndex == 0) {
+		yprOffset[0] = RazorIMU[0];
+		yprOffset[1] = RazorIMU[1];
+		yprOffset[2] = RazorIMU[2];
+
+		return TOVR_SUCCESS;
+	}
+	else {
+		return TOVR_FAILURE;
+	}
+
+}
 
 void RazorIMURead()
 {
@@ -141,7 +151,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 #define StepPos 0.0033;
 #define StepRot 0.1;
 
-DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
+DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 {
 	if (RazorInit == false) {
 		RazorInit = true;
@@ -173,81 +183,66 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
 			fPos[2] = 0;
 		}
 
-		myHMD->X = fPos[0];
-		myHMD->Y = fPos[1];
-		myHMD->Z = fPos[2];
-		myHMD->Yaw = OffsetYPR(RazorIMU[2], yprOffset[2]);
-		myHMD->Pitch = OffsetYPR(RazorIMU[0], yprOffset[0]) * -1;
-		myHMD->Roll = OffsetYPR(RazorIMU[1], yprOffset[1]) * -1;
+		HMD->X = fPos[0];
+		HMD->Y = fPos[1];
+		HMD->Z = fPos[2];
+		HMD->Yaw = OffsetYPR(RazorIMU[2], yprOffset[2]);
+		HMD->Pitch = OffsetYPR(RazorIMU[0], yprOffset[0]) * -1;
+		HMD->Roll = OffsetYPR(RazorIMU[1], yprOffset[1]) * -1;
 
 		return TOVR_SUCCESS;
 	}
 	else {
-		myHMD->X = 0;
-		myHMD->Y = 0;
-		myHMD->Z = 0;
+		HMD->X = 0;
+		HMD->Y = 0;
+		HMD->Z = 0;
 
-		myHMD->X = fPos[0];
-		myHMD->Y = fPos[1];
-		myHMD->Z = fPos[2];
+		HMD->X = fPos[0];
+		HMD->Y = fPos[1];
+		HMD->Z = fPos[2];
 
-		myHMD->Yaw = 0;
-		myHMD->Pitch = 0;
-		myHMD->Roll = 0;
+		HMD->Yaw = 0;
+		HMD->Pitch = 0;
+		HMD->Roll = 0;
 
 		return TOVR_FAILURE;
 	}
 }
 
-DLLEXPORT DWORD __stdcall GetControllersData(__out TController *myController, __out TController *myController2)
+DLLEXPORT DWORD __stdcall GetControllersData(__out TController *FirstController, __out TController *SecondController)
 {
 	//Controller 1
-	myController->X = 0;
-	myController->Y = 0;
-	myController->Z = 0;
+	FirstController->X = 0;
+	FirstController->Y = 0;
+	FirstController->Z = 0;
 
-	myController->Yaw = 0;
-	myController->Pitch = 0;
-	myController->Roll = 0;
+	FirstController->Yaw = 0;
+	FirstController->Pitch = 0;
+	FirstController->Roll = 0;
 
-	myController->Buttons = 0;
-	myController->Trigger = 0;
-	myController->ThumbX = 0;
-	myController->ThumbY = 0;
+	FirstController->Buttons = 0;
+	FirstController->Trigger = 0;
+	FirstController->AxisX = 0;
+	FirstController->AxisY = 0;
 
 	//Controller 2
-	myController2->X = 0;
-	myController2->Y = 0;
-	myController2->Z = 0;
+	SecondController->X = 0;
+	SecondController->Y = 0;
+	SecondController->Z = 0;
 
-	myController2->Yaw = 0;
-	myController2->Pitch = 0;
-	myController2->Roll = 0;
+	SecondController->Yaw = 0;
+	SecondController->Pitch = 0;
+	SecondController->Roll = 0;
 
-	myController2->Buttons = 0;
-	myController2->Trigger = 0;
-	myController2->ThumbX = 0;
-	myController2->ThumbY = 0;
+	SecondController->Buttons = 0;
+	SecondController->Trigger = 0;
+	SecondController->AxisX = 0;
+	SecondController->AxisY = 0;
 
 	return TOVR_FAILURE;
 }
 
-DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed)
+DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in unsigned char MotorSpeed)
 {
 	return TOVR_FAILURE;
-}
-
-DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex)
-{
-	if (HMDConnected && dwIndex == 0) {
-		yprOffset[0] = RazorIMU[0];
-		yprOffset[1] = RazorIMU[1];
-		yprOffset[2] = RazorIMU[2];
-
-		return TOVR_SUCCESS;
-	}
-	else {
-		return TOVR_FAILURE;
-	}
-
 }

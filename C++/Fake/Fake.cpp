@@ -22,16 +22,14 @@ typedef struct _Controller
 	double	Yaw;
 	double	Pitch;
 	double	Roll;
-	WORD	Buttons;
-	BYTE	Trigger;
-	SHORT	ThumbX;
-	SHORT	ThumbY;
+	unsigned short	Buttons;
+	float	Trigger;
+	float	AxisX;
+	float	AxisY;
 } TController, *PController;
 
-DLLEXPORT DWORD __stdcall GetHMDData(__out THMD* myHMD);
-DLLEXPORT DWORD __stdcall GetControllersData(__out TController* MyController, __out TController* MyController2);
-DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed);
-DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex);
+#define TOVR_SUCCESS 0
+#define TOVR_FAILURE 1
 
 int RandBtn[5] = {1, 2, 4, 8};
 int HMDMode = 0, ControllerMode = 0;
@@ -52,7 +50,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	return TRUE;
 }
 
-DLLEXPORT DWORD __stdcall GetHMDData(__out THMD* myHMD)
+DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 {
 	if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0 && (GetAsyncKeyState(VK_MENU) & 0x8000) != 0 && (GetAsyncKeyState(49) & 0x8000) != 0)
 		HMDMode = 1;
@@ -63,12 +61,12 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD* myHMD)
 
 	switch (HMDMode) {
 	case 0:
-		myHMD->X = 0.015;
-		myHMD->Y = 0.06;
-		myHMD->Z = 0.037;
-		myHMD->Yaw = 45;
-		myHMD->Pitch = -25;
-		myHMD->Roll = -10;
+		HMD->X = 0.015;
+		HMD->Y = 0.06;
+		HMD->Z = 0.037;
+		HMD->Yaw = 45;
+		HMD->Pitch = -25;
+		HMD->Roll = -10;
 		break;
 	
 
@@ -103,28 +101,28 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD* myHMD)
 			myRoll = 0;
 		}
 
-		myHMD->X = myX;
-		myHMD->Y = myY;
-		myHMD->Z = myZ;
-		myHMD->Yaw = myYaw;
-		myHMD->Pitch = myPitch - 25;
-		myHMD->Roll = myRoll - 10;
+		HMD->X = myX;
+		HMD->Y = myY;
+		HMD->Z = myZ;
+		HMD->Yaw = myYaw;
+		HMD->Pitch = myPitch - 25;
+		HMD->Roll = myRoll - 10;
 		break;
 
 	case 2:
-		myHMD->X = (rand() % 1000 + 1) / 1000.0;
-		myHMD->Y = (rand() % 1000 + 1) / 1000.0;
-		myHMD->Z = (rand() % 1000 + 1) / 1000.0;
-		myHMD->Yaw = (rand() % 180 + 1) - (rand() % 180 + 1);
-		myHMD->Pitch = (rand() % 180 + 1) - (rand() % 180 + 1);
-		myHMD->Roll = (rand() % 180 + 1) - (rand() % 180 + 1);
+		HMD->X = (rand() % 1000 + 1) / 1000.0;
+		HMD->Y = (rand() % 1000 + 1) / 1000.0;
+		HMD->Z = (rand() % 1000 + 1) / 1000.0;
+		HMD->Yaw = (rand() % 180 + 1) - (rand() % 180 + 1);
+		HMD->Pitch = (rand() % 180 + 1) - (rand() % 180 + 1);
+		HMD->Roll = (rand() % 180 + 1) - (rand() % 180 + 1);
 		break;
 	}
 
-	return 1;
+	return TOVR_SUCCESS;
 }
 
-DLLEXPORT DWORD __stdcall GetControllersData(__out TController* myController, __out TController* myController2)
+DLLEXPORT DWORD __stdcall GetControllersData(__out TController *FirstController, __out TController *SecondController)
 {
 	if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0 && (GetAsyncKeyState(VK_MENU) & 0x8000) != 0 && (GetAsyncKeyState(52) & 0x8000) != 0)
 		ControllerMode = 1;
@@ -133,72 +131,67 @@ DLLEXPORT DWORD __stdcall GetControllersData(__out TController* myController, __
 
 	switch (ControllerMode) {
 	case 0:
-		myController->X = 0.24;
-		myController->Y = -0.83;
-		myController->Z = 0.71;
+		FirstController->X = 0.24;
+		FirstController->Y = -0.83;
+		FirstController->Z = 0.71;
 
-		myController->Yaw = 15;
-		myController->Pitch = 32;
-		myController->Roll = -10;
+		FirstController->Yaw = 15;
+		FirstController->Pitch = 32;
+		FirstController->Roll = -10;
 
-		myController->Buttons = 1;
-		myController->Trigger = 135;
-		myController->ThumbX = -6371;
-		myController->ThumbY = 24459;
+		FirstController->Buttons = 1;
+		FirstController->Trigger = 0.78;
+		FirstController->AxisX = -0.35;
+		FirstController->AxisY = 0.61;
 
 
-		myController2->X = 0.25;
-		myController2->Y = 0.83;
-		myController2->Z = 0.74;
+		SecondController->X = 0.25;
+		SecondController->Y = 0.83;
+		SecondController->Z = 0.74;
 
-		myController2->Yaw = 31;
-		myController2->Pitch = 12;
-		myController2->Roll = -24;
+		SecondController->Yaw = 31;
+		SecondController->Pitch = 12;
+		SecondController->Roll = -24;
 
-		myController2->Buttons = 2;
-		myController2->Trigger = 255;
-		myController2->ThumbX = -200;
-		myController2->ThumbY = 15392;
+		SecondController->Buttons = 2;
+		SecondController->Trigger = 0.94;
+		SecondController->AxisX = -0.25;
+		SecondController->AxisY = 1;
 		break;
 	case 1:
-		myController->X = (rand() % 1000 + 1) / 1000.0;
-		myController->Y = (rand() % 1000 + 1) / 1000.0;
-		myController->Z = (rand() % 1000 + 1) / 1000.0;
+		FirstController->X = (rand() % 1000 + 1) / 1000.0;
+		FirstController->Y = (rand() % 1000 + 1) / 1000.0;
+		FirstController->Z = (rand() % 1000 + 1) / 1000.0;
 
-		myController->Yaw = (rand() % 180 + 1) - (rand() % 180 + 1);
-		myController->Pitch = (rand() % 180 + 1) - (rand() % 180 + 1);
-		myController->Roll = (rand() % 180 + 1) - (rand() % 180 + 1);
+		FirstController->Yaw = (rand() % 180 + 1) - (rand() % 180 + 1);
+		FirstController->Pitch = (rand() % 180 + 1) - (rand() % 180 + 1);
+		FirstController->Roll = (rand() % 180 + 1) - (rand() % 180 + 1);
 
-		myController->Buttons = RandBtn[rand() % 5];
-		myController->Trigger = rand() % 255 + 1;
-		myController->ThumbX = (rand() % 32767 + 1) - (rand() % 32767 + 1);
-		myController->ThumbY = (rand() % 32767 + 1) - (rand() % 32767 + 1);
+		FirstController->Buttons = RandBtn[rand() % 5];
+		FirstController->Trigger = rand() % 100 * 0.01;
+		FirstController->AxisX = (rand() % 100 * 0.01) - (rand() % 100 * 0.01);
+		FirstController->AxisY = (rand() % 100 * 0.01) - (rand() % 100 * 0.01);
 
 
-		myController2->X = (rand() % 1000 + 1) / 1000.0;
-		myController2->Y = (rand() % 1000 + 1) / 1000.0;
-		myController2->Z = (rand() % 1000 + 1) / 1000.0;
+		SecondController->X = (rand() % 1000 + 1) / 1000.0;
+		SecondController->Y = (rand() % 1000 + 1) / 1000.0;
+		SecondController->Z = (rand() % 1000 + 1) / 1000.0;
 
-		myController2->Yaw = (rand() % 180 + 1) - (rand() % 180 + 1);
-		myController2->Pitch = (rand() % 180 + 1) - (rand() % 180 + 1);
-		myController2->Roll = (rand() % 180 + 1) - (rand() % 180 + 1);
+		SecondController->Yaw = (rand() % 180 + 1) - (rand() % 180 + 1);
+		SecondController->Pitch = (rand() % 180 + 1) - (rand() % 180 + 1);
+		SecondController->Roll = (rand() % 180 + 1) - (rand() % 180 + 1);
 
-		myController2->Buttons = RandBtn[rand() % 5];
-		myController2->Trigger = rand() % 255 + 1;
-		myController2->ThumbX = (rand() % 32767 + 1) - (rand() % 32767 + 1);
-		myController2->ThumbY = (rand() % 32767 + 1) - (rand() % 32767 + 1);
+		SecondController->Buttons = RandBtn[rand() % 5];
+		SecondController->Trigger = rand() % 100 * 0.01;
+		SecondController->AxisX = (rand() % 100 * 0.01) - (rand() % 100 * 0.01);
+		SecondController->AxisY = (rand() % 100 * 0.01) - (rand() % 100 * 0.01);
 		break;
 	}
 
-	return 1;
+	return TOVR_FAILURE;
 }
 
-DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed)
+DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in unsigned char MotorSpeed)
 {
-	return 1;
-}
-
-DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex)
-{
-	return 1;
+	return TOVR_FAILURE;
 }

@@ -4,7 +4,7 @@
 Готовые и демонстрационные драйверы для VR устройств.
 
 ## Драйверы
-**PSMoveService** - драйвер позволяющий получать позиционирование в пространстве, для шлема и контроллеров, с помощью пинг понг шариков со светодиодами. Для работы необходим ["PSMoveService"](https://github.com/cboulay/PSMoveService). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
+**PSMoveService** - драйвер позволяющий получать позиционирование, в пространстве, для самодельных устройств (с помощью пинг понг шариков со светодиодами) и использовать PS Move контроллеры и PSVR шлем. Для работы необходим ["PSMoveService"](https://github.com/cboulay/PSMoveService). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
 
 **RazerHydra** - драйвер позволяющий получать использовать контроллеры Razer Hydra. Для работы необходимо установить "SixenceSDK" ("Additionally\RazerHydra\Install.bat"). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/RazerHydra).
 
@@ -28,7 +28,7 @@
 
 **Emulation** - драйвер имитирующий VR устройства, без данных. Для эмуляции трекеров или устройств.
 
-**Sample** - демонстрационный драйвер на С++ и Delphi. Подходит для тестов.
+**Sample** - демонстрационный драйвер на С++ и Delphi. Подходит для тестов и разработки.
 
 **Fake** - драйвер имитирующий VR устройства, с данными. Подходит для тестов.
 

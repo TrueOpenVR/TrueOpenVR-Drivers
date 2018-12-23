@@ -31,42 +31,44 @@ end;
     Pitch: double;
     Roll: double;
     Buttons: word;
-    Trigger: byte;
-    ThumbX: smallint;
-    ThumbY: smallint;
+    Trigger: single;
+    AxisX: single;
+    AxisY: single;
 end;
   Controller = _Controller;
   TController = Controller;
+
+const
+  TOVR_SUCCESS = 0;
+  TOVR_FAILURE = 1;
 
 var
   Ctrl1Dll, Ctrl2Dll: HMODULE;
   Error: boolean;
 
-  DriverGetController1: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverGetController2: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverSetController1Data: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
-  DriverSetController2Data: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
-  DriverSetCenteringCtrl1: function (dwIndex: integer): DWORD; stdcall;
-  DriverSetCenteringCtrl2: function (dwIndex: integer): DWORD; stdcall;
+  DriverGetController1: function(out FirstController, SecondController: TController): DWORD; stdcall;
+  DriverGetController2: function(out FirstController, SecondController: TController): DWORD; stdcall;
+  DriverSetController1Data: function (dwIndex: integer; MotorSpeed: byte): DWORD; stdcall;
+  DriverSetController2Data: function (dwIndex: integer; MotorSpeed: byte): DWORD; stdcall;
 
   Ctrl1Index, Ctrl2Index: byte;
   UseScndDrv: boolean;
 
 {$R *.res}
 
-function GetHMDData(out myHMD: THMD): DWORD; stdcall;
+function GetHMDData(out MyHMD: THMD): DWORD; stdcall;
 begin
-  myHMD.X:=0;
-  myHMD.Y:=0;
-  myHMD.Z:=0;
-  myHMD.Yaw:=0;
-  myHMD.Pitch:=0;
-  myHMD.Roll:=0;
+  MyHMD.X:=0;
+  MyHMD.Y:=0;
+  MyHMD.Z:=0;
+  MyHMD.Yaw:=0;
+  MyHMD.Pitch:=0;
+  MyHMD.Roll:=0;
   
-  Result:=0;
+  Result:=TOVR_FAILURE;
 end;
 
-function GetControllersData(out myController, myController2: TController): DWORD; stdcall;
+function GetControllersData(out FirstController, SecondController: TController): DWORD; stdcall;
 var
   Ctrl1, Ctrl2: TController;
   MyStat, StatCount: DWORD;
@@ -77,38 +79,40 @@ begin
     StatCount:=0;
 
     //Controller 1
-    MyStat:=MyStat + DriverGetController1(Ctrl1, Ctrl2);
+    if DriverGetController1(Ctrl1, Ctrl2) = TOVR_SUCCESS then
+      MyStat:=MyStat + 1;
     StatCount:=StatCount + 1;
 
     if Ctrl1Index = 1 then begin
-      myController:=Ctrl1;
-      myController2:=Ctrl2; //if not use second driver
+      FirstController:=Ctrl1;
+      SecondController:=Ctrl2; //if not use second driver
     end else begin
-      myController2:=Ctrl1;
-      myController:=Ctrl2;
+      SecondController:=Ctrl1;
+      FirstController:=Ctrl2;
     end;
 
     //Controller 2
     if (UseScndDrv) then begin
-      MyStat:=MyStat + DriverGetController2(Ctrl1, Ctrl2);
+      if DriverGetController2(Ctrl1, Ctrl2) = TOVR_SUCCESS then
+        MyStat:=MyStat + 1;
       StatCount:=StatCount + 1;
 
       if Ctrl2Index = 1 then
-        myController2:=Ctrl1
+        SecondController:=Ctrl1
       else
-        myController2:=Ctrl2;
+        SecondController:=Ctrl2;
     end;
 
     if MyStat = StatCount then
-      Result:=1
+      Result:=TOVR_SUCCESS
     else
-      Result:=0;
+      Result:=TOVR_FAILURE;
       
   end else
-    Result:=0;
+    Result:=TOVR_FAILURE;
 end;
 
-function SetControllerData(dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
+function SetControllerData(dwIndex: integer; MotorSpeed: byte): DWORD; stdcall;
 var
   MyStat, StatCount: DWORD;
 begin
@@ -116,18 +120,7 @@ begin
     1: Result:=DriverSetController1Data(Ctrl1Index, MotorSpeed);
     2: if UseScndDrv then Result:=DriverSetController2Data(Ctrl2Index, MotorSpeed) else Result:=DriverSetController1Data(Ctrl2Index, MotorSpeed);
   else
-    Result:=0;
-  end;
-end;
-
-function SetCentering(dwIndex: integer): DWORD; stdcall;
-begin
-  case dwIndex of
-    0: Result:=0;
-    1: Result:=DriverSetCenteringCtrl1(Ctrl1Index);
-    2: if UseScndDrv then Result:=DriverSetCenteringCtrl2(Ctrl2Index) else Result:=DriverSetCenteringCtrl1(Ctrl2Index);
-  else
-    Result:=0;
+    Result:=TOVR_SUCCESS;
   end;
 end;
 
@@ -174,14 +167,12 @@ begin
           Ctrl1Dll:=LoadLibrary(PChar(Ctrl1DrvPath));
           @DriverGetController1:=GetProcAddress(Ctrl1Dll, 'GetControllersData');
           @DriverSetController1Data:=GetProcAddress(Ctrl1Dll, 'SetControllerData');
-          @DriverSetCenteringCtrl1:=GetProcAddress(Ctrl1Dll, 'SetCentering');
 
           //Controller2
           if UseScndDrv then begin
             Ctrl2Dll:=LoadLibrary(PChar(Ctrl2DrvPath));
             @DriverGetController2:=GetProcAddress(Ctrl2Dll, 'GetControllersData');
             @DriverSetController2Data:=GetProcAddress(Ctrl2Dll, 'SetControllerData');
-            @DriverSetCenteringCtrl2:=GetProcAddress(Ctrl2Dll, 'SetCentering');
           end;
 
         end;
@@ -200,7 +191,7 @@ begin
 end;
 
 exports
-  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
+  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3;
 
 begin
   DllProc:=@DllMain;

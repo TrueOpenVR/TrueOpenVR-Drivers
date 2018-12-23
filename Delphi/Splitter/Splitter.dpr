@@ -27,46 +27,39 @@ end;
     Pitch: double;
     Roll: double;
     Buttons: word;
-    Trigger: byte;
-    ThumbX: smallint;
-    ThumbY: smallint;
+    Trigger: single;
+    AxisX: single;
+    AxisY: single;
 end;
   Controller = _Controller;
   TController = Controller;
+
+const
+  TOVR_SUCCESS = 0;
+  TOVR_FAILURE = 1;
 
 var
   HMDDllHandle, CtrlsDllHandle: HMODULE;
   Error: boolean;
   DriverGetHMDData: function(out myHMD: THMD): DWORD; stdcall;
-  DriverGetControllersData: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverSetControllerData: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
-  DriverSetCenteringHMD: function (dwIndex: integer): DWORD; stdcall;
-  DriverSetCenteringCtrls: function (dwIndex: integer): DWORD; stdcall;
+  DriverGetControllersData: function(out FirstController, SecondController: TController): DWORD; stdcall;
+  DriverSetControllerData: function (dwIndex: integer; MotorSpeed: byte): DWORD; stdcall;
 
 {$R *.res}
 
-function GetHMDData(out myHMD: THMD): DWORD; stdcall;
+function GetHMDData(out MyHMD: THMD): DWORD; stdcall;
 begin
-  Result:=DriverGetHMDData(myHMD);
+  Result:=DriverGetHMDData(MyHMD);
 end;
 
-function GetControllersData(out myController, myController2: TController): DWORD; stdcall;
+function GetControllersData(out FirstController, SecondController: TController): DWORD; stdcall;
 begin
-  Result:=DriverGetControllersData(myController, myController2);
+  Result:=DriverGetControllersData(FirstController, SecondController);
 end;
 
-function SetControllerData(dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
+function SetControllerData(dwIndex: integer; MotorSpeed: byte): DWORD; stdcall;
 begin
   Result:=DriverSetControllerData(dwIndex, MotorSpeed);
-end;
-
-function SetCentering(dwIndex: integer): DWORD; stdcall;
-begin
-  case dwIndex of
-    0: Result:=DriverSetCenteringHMD(0);
-    1: Result:=DriverSetCenteringCtrls(1);
-    2: Result:=DriverSetCenteringCtrls(2);
-  end;
 end;
 
 procedure DllMain(Reason: integer);
@@ -101,8 +94,6 @@ begin
           @DriverGetHMDData:=GetProcAddress(HMDDllHandle, 'GetHMDData');
           @DriverGetControllersData:=GetProcAddress(CtrlsDllHandle, 'GetControllersData');
           @DriverSetControllerData:=GetProcAddress(CtrlsDllHandle, 'SetControllerData');
-          @DriverSetCenteringHMD:=GetProcAddress(HMDDllHandle, 'SetCentering');
-          @DriverSetCenteringCtrls:=GetProcAddress(CtrlsDllHandle, 'SetCentering');
         end;
         Reg.Free;
       end;
@@ -116,7 +107,7 @@ begin
 end;
 
 exports
-  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
+  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3;
 
 begin
   DllProc:=@DllMain;

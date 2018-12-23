@@ -8,6 +8,8 @@ Controler 1 Touchpad press	Left stick press
 Controler 1 System		Back
 Controler 1 Grip		Left Bumper
 Controler 1 Menu		DPad up
+Controler 1 A			DPad left
+Controler 1 B			DPad right
 
 
 Controler 2 Touchpad	 	Right stick
@@ -17,5 +19,7 @@ Controler 2 Touchpad press	Right stick press
 Controler 2 System		Start
 Controler 2 Grip		Right Bumper
 Controler 2 Menu		Y
+Controler 2 A			X
+Controler 2 B			B
 
 

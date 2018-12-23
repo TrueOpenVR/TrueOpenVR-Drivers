@@ -4,7 +4,7 @@
 Ready and samples drivers for VR devices.
 
 ## Drivers
-**PSMoveService** - driver allowing to receive positioning in space, for HMD and controllers, using ping pong balls with LEDs. Need to work [PSMoveService](https://github.com/cboulay/PSMoveService). Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
+**PSMoveService** - driver allowing to get position in space for DIY devices (using ping pong balls with LEDs) and use PS Move controllers and PSVR HMD. Need to work [PSMoveService](https://github.com/cboulay/PSMoveService). Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
 
 **RazerHydra** - driver allowing to use the Razer Hydra controllers. To work you need to install "SixenceSDK" ("Additionally\RazerHydra\Install.bat"). Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/RazerHydra).
 
@@ -28,6 +28,6 @@ Ready and samples drivers for VR devices.
 
 **Emulation** - driver simulating a VR devices without data. To emulate trackers or devices.
 
-**Sample** - sample driver for C++ and Delphi. Suitable for tests.
+**Sample** - sample driver for C++ and Delphi. Suitable for tests and development.
 
 **Fake** - driver simulating a VR devices with data. Suitable for tests.

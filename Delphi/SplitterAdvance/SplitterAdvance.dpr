@@ -31,12 +31,16 @@ end;
     Pitch: double;
     Roll: double;
     Buttons: word;
-    Trigger: byte;
-    ThumbX: smallint;
-    ThumbY: smallint;
+    Trigger: single;
+    AxisX: single;
+    AxisY: single;
 end;
   Controller = _Controller;
   TController = Controller;
+
+const
+  TOVR_SUCCESS = 0;
+  TOVR_FAILURE = 1;
 
 type TOffsetPos = record
   X: double;
@@ -51,15 +55,13 @@ type TOffsetYPR = record
 end;
 
 var
-  DriverGetHMDPos: function(out myHMD: THMD): DWORD; stdcall;
-  DriverGetHMDRot: function(out myHMD: THMD): DWORD; stdcall;
-  DriverSetCenteringHMD: function (dwIndex: integer): DWORD; stdcall;
+  DriverGetHMDPos: function(out MyHMD: THMD): DWORD; stdcall;
+  DriverGetHMDRot: function(out MyHMD: THMD): DWORD; stdcall;
 
-  DriverGetControllersPos: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverGetControllersRot: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverGetControllersBtns: function(out myController, myController2: TController): DWORD; stdcall;
-  DriverSetControllerData: function (dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
-  DriverSetCenteringCtrls: function (dwIndex: integer): DWORD; stdcall;
+  DriverGetControllersPos: function(out FirstController, SecondController: TController): DWORD; stdcall;
+  DriverGetControllersRot: function(out FirstController, SecondController: TController): DWORD; stdcall;
+  DriverGetControllersBtns: function(out FirstController, SecondController: TController): DWORD; stdcall;
+  DriverSetControllerData: function (dwIndex: integer; MotorSpeed: byte): DWORD; stdcall;
 
 
   HMDPosDll, HMDRotDll, CtrlsPosDll, CtrlsRotDll, CtrlsBtnsDll: HMODULE;
@@ -72,17 +74,19 @@ var
 
 {$R *.res}
 
-function fmod(x, y: double): double;
+function OffsetYPR(f, f2: double): double;
 begin
-  Result:=y * Frac(x / y);
+  f:=f - f2;
+
+  if (f < -180) then
+    f:=f + 360
+  else if (f > 180) then
+    f:=f - 360;
+
+	Result:=f;
 end;
 
-function MyOffset(f, f2: double): double;
-begin
-  Result:=fmod(f - f2, 180);
-end;
-
-function GetHMDData(out myHMD: THMD): DWORD; stdcall;
+function GetHMDData(out MyHMD: THMD): DWORD; stdcall;
 var
   HMDRot: THMD; MyStat, StatCount: DWORD;
 begin
@@ -91,46 +95,47 @@ begin
     MyStat:=0;
     StatCount:=0;
 
-    MyStat:=MyStat + DriverGetHMDPos(myHMD);
+    if DriverGetHMDPos(MyHMD) = TOVR_SUCCESS then
+      MyStat:=MyStat + 1;
     StatCount:=StatCount + 1;
 
     if HMDUseRot then begin
       MyStat:=MyStat + DriverGetHMDRot(HMDRot);
       StatCount:=StatCount + 1;
 
-      myHMD.Yaw:=HMDRot.Yaw;
-      myHMD.Pitch:=HMDRot.Pitch;
-      myHMD.Roll:=HMDRot.Roll;
+      MyHMD.Yaw:=HMDRot.Yaw;
+      MyHMD.Pitch:=HMDRot.Pitch;
+      MyHMD.Roll:=HMDRot.Roll;
     end;
 
     //HMD offset pos
-    myHMD.X:=myHMD.X + HMDPosOffset.X;
-    myHMD.Y:=myHMD.Y + HMDPosOffset.Y;
-    myHMD.Z:=myHMD.Z + HMDPosOffset.Z;
+    MyHMD.X:=MyHMD.X + HMDPosOffset.X;
+    MyHMD.Y:=MyHMD.Y + HMDPosOffset.Y;
+    MyHMD.Z:=MyHMD.Z + HMDPosOffset.Z;
 
     //HMD offset ypr
-    myHMD.Yaw:=MyOffset(myHMD.Yaw, HMDYPROffset.Yaw);
-    myHMD.Pitch:=MyOffset(myHMD.Pitch, HMDYPROffset.Pitch);
-    myHMD.Roll:=MyOffset(myHMD.Roll, HMDYPROffset.Roll);
+    MyHMD.Yaw:=OffsetYPR(MyHMD.Yaw, HMDYPROffset.Yaw);
+    MyHMD.Pitch:=OffsetYPR(MyHMD.Pitch, HMDYPROffset.Pitch);
+    MyHMD.Roll:=OffsetYPR(MyHMD.Roll, HMDYPROffset.Roll);
 
     if MyStat = StatCount then
-      Result:=1
+      Result:=TOVR_SUCCESS
     else
-      Result:=0;
+      Result:=TOVR_FAILURE;
   end else begin
-    myHMD.X:=0;
-    myHMD.Y:=0;
-    myHMD.Z:=0;
+    MyHMD.X:=0;
+    MyHMD.Y:=0;
+    MyHMD.Z:=0;
 
-    myHMD.Yaw:=0;
-    myHMD.Pitch:=0;
-    myHMD.Roll:=0;
+    MyHMD.Yaw:=0;
+    MyHMD.Pitch:=0;
+    MyHMD.Roll:=0;
 
-    Result:=0;
+    Result:=TOVR_FAILURE;
   end;
 end;
 
-function GetControllersData(out myController, myController2: TController): DWORD; stdcall;
+function GetControllersData(out FirstController, SecondController: TController): DWORD; stdcall;
 var
   Ctrl1Pos, Ctrl1Rot, Ctrl1Btns: TController;
   Ctrl2Pos, Ctrl2Rot, Ctrl2Btns: TController;
@@ -142,97 +147,89 @@ begin
     StatCount:=0;
 
     //Position
-    MyStat:=MyStat + DriverGetControllersPos(Ctrl1Pos, Ctrl2Pos);
+    if DriverGetControllersPos(Ctrl1Pos, Ctrl2Pos) = TOVR_SUCCESS then
+      MyStat:=MyStat + 1;
     StatCount:=StatCount + 1;
 
-    myController:=Ctrl1Pos;
-    myController2:=Ctrl2Pos;
+    FirstController:=Ctrl1Pos;
+    SecondController:=Ctrl2Pos;
 
     //Rotation
     if CtrlsUseRot then begin
-      MyStat:=MyStat + DriverGetControllersRot(Ctrl1Rot, Ctrl2Rot);
+      if DriverGetControllersRot(Ctrl1Rot, Ctrl2Rot) = TOVR_SUCCESS then
+        MyStat:=MyStat + 1;
       StatCount:=StatCount + 1;
 
-        myController.Yaw:=Ctrl1Rot.Yaw;
-        myController.Pitch:=Ctrl1Rot.Pitch;
-        myController.Roll:=Ctrl1Rot.Roll;
+        FirstController.Yaw:=Ctrl1Rot.Yaw;
+        FirstController.Pitch:=Ctrl1Rot.Pitch;
+        FirstController.Roll:=Ctrl1Rot.Roll;
 
-        myController2.Yaw:=Ctrl2Rot.Yaw;
-        myController2.Pitch:=Ctrl2Rot.Pitch;
-        myController2.Roll:=Ctrl2Rot.Roll;
+        SecondController.Yaw:=Ctrl2Rot.Yaw;
+        SecondController.Pitch:=Ctrl2Rot.Pitch;
+        SecondController.Roll:=Ctrl2Rot.Roll;
 
 
         if CtrlsRotBtns then begin
-          myController.Buttons:=Ctrl1Rot.Buttons;
-          myController.Trigger:=Ctrl1Rot.Trigger;
-          myController.ThumbX:=Ctrl1Rot.ThumbX;
-          myController.ThumbY:=Ctrl1Rot.ThumbY;
+          FirstController.Buttons:=Ctrl1Rot.Buttons;
+          FirstController.Trigger:=Ctrl1Rot.Trigger;
+          FirstController.AxisX:=Ctrl1Rot.AxisX;
+          FirstController.AxisY:=Ctrl1Rot.AxisY;
 
-          myController2.Buttons:=Ctrl2Rot.Buttons;
-          myController2.Trigger:=Ctrl2Rot.Trigger;
-          myController2.ThumbX:=Ctrl2Rot.ThumbX;
-          myController2.ThumbY:=Ctrl2Rot.ThumbY;
+          SecondController.Buttons:=Ctrl2Rot.Buttons;
+          SecondController.Trigger:=Ctrl2Rot.Trigger;
+          SecondController.AxisX:=Ctrl2Rot.AxisX;
+          SecondController.AxisY:=Ctrl2Rot.AxisY;
         end;
     end;
 
     //Buttons
     if CtrlsUseBtns then begin
-      MyStat:=MyStat + DriverGetControllersBtns(Ctrl1Btns, Ctrl2Btns);
+      if DriverGetControllersBtns(Ctrl1Btns, Ctrl2Btns) = TOVR_SUCCESS then
+        MyStat:=MyStat + 1;
       StatCount:=StatCount + 1;
 
-      myController.Buttons:=Ctrl1Btns.Buttons;
-      myController.Trigger:=Ctrl1Btns.Trigger;
-      myController.ThumbX:=Ctrl1Btns.ThumbX;
-      myController.ThumbY:=Ctrl1Btns.ThumbY;
+      FirstController.Buttons:=Ctrl1Btns.Buttons;
+      FirstController.Trigger:=Ctrl1Btns.Trigger;
+      FirstController.AxisX:=Ctrl1Btns.AxisX;
+      FirstController.AxisY:=Ctrl1Btns.AxisY;
 
-      myController2.Buttons:=Ctrl2Btns.Buttons;
-      myController2.Trigger:=Ctrl2Btns.Trigger;
-      myController2.ThumbX:=Ctrl2Btns.ThumbX;
-      myController2.ThumbY:=Ctrl2Btns.ThumbY;
+      SecondController.Buttons:=Ctrl2Btns.Buttons;
+      SecondController.Trigger:=Ctrl2Btns.Trigger;
+      SecondController.AxisX:=Ctrl2Btns.AxisX;
+      SecondController.AxisY:=Ctrl2Btns.AxisY;
     end;
 
     //Controoler1 offset pos
-    myController.X:=myController.X + Ctrl1PosOffset.X;
-    myController.Y:=myController.Y + Ctrl1PosOffset.Y;
-    myController.Z:=myController.Z + Ctrl1PosOffset.Z;
+    FirstController.X:=FirstController.X + Ctrl1PosOffset.X;
+    FirstController.Y:=FirstController.Y + Ctrl1PosOffset.Y;
+    FirstController.Z:=FirstController.Z + Ctrl1PosOffset.Z;
 
     //Controller offset ypr
-    myController.Yaw:=MyOffset(myController.Yaw, Ctrl1YPROffset.Yaw);
-    myController.Pitch:=MyOffset(myController.Pitch, Ctrl1YPROffset.Pitch);
-    myController.Roll:=MyOffset(myController.Roll, Ctrl1YPROffset.Roll);
+    FirstController.Yaw:=OffsetYPR(FirstController.Yaw, Ctrl1YPROffset.Yaw);
+    FirstController.Pitch:=OffsetYPR(FirstController.Pitch, Ctrl1YPROffset.Pitch);
+    FirstController.Roll:=OffsetYPR(FirstController.Roll, Ctrl1YPROffset.Roll);
 
     //Controoler2 offset pos
-    myController2.X:=myController2.X + Ctrl2PosOffset.X;
-    myController2.Y:=myController2.Y + Ctrl2PosOffset.Y;
-    myController2.Z:=myController2.Z + Ctrl2PosOffset.Z;
+    SecondController.X:=SecondController.X + Ctrl2PosOffset.X;
+    SecondController.Y:=SecondController.Y + Ctrl2PosOffset.Y;
+    SecondController.Z:=SecondController.Z + Ctrl2PosOffset.Z;
 
     //Controller offset ypr
-    myController2.Yaw:=MyOffset(myController2.Yaw, Ctrl2YPROffset.Yaw);
-    myController2.Pitch:=MyOffset(myController2.Pitch, Ctrl2YPROffset.Pitch);
-    myController2.Roll:=MyOffset(myController2.Roll, Ctrl2YPROffset.Roll);
+    SecondController.Yaw:=OffsetYPR(SecondController.Yaw, Ctrl2YPROffset.Yaw);
+    SecondController.Pitch:=OffsetYPR(SecondController.Pitch, Ctrl2YPROffset.Pitch);
+    SecondController.Roll:=OffsetYPR(SecondController.Roll, Ctrl2YPROffset.Roll);
 
     if MyStat = StatCount then
-      Result:=1
+      Result:=TOVR_SUCCESS
     else
-      Result:=0;
+      Result:=TOVR_FAILURE;
   end else
-    Result:=0;
+    Result:=TOVR_FAILURE;
 end;
 
-function SetControllerData(dwIndex: integer; MotorSpeed: word): DWORD; stdcall;
+function SetControllerData(dwIndex: integer; MotorSpeed: byte): DWORD; stdcall;
 begin
   Result:=DriverSetControllerData(dwIndex, MotorSpeed);
-end;
-
-function SetCentering(dwIndex: integer): DWORD; stdcall;
-begin
-  case dwIndex of
-    0: Result:=DriverSetCenteringHMD(0);
-    1: Result:=DriverSetCenteringCtrls(1);
-    2: Result:=DriverSetCenteringCtrls(2);
-    else
-      Result:=0;
-  end;
 end;
 
 procedure DllMain(Reason: integer);
@@ -353,21 +350,17 @@ begin
           if HMDUseRot then begin
             HMDRotDll:=LoadLibrary(PChar(HMDRotDrvPath));
             @DriverGetHMDRot:=GetProcAddress(HMDRotDll, 'GetHMDData');
-            @DriverSetCenteringHMD:=GetProcAddress(HMDRotDll, 'SetCentering');
-          end else
-            @DriverSetCenteringHMD:=GetProcAddress(HMDPosDll, 'SetCentering');
+          end;
 
           //Controllers
           CtrlsPosDll:=LoadLibrary(PChar(CtrlsPosDrvPath));
           @DriverGetControllersPos:=GetProcAddress(CtrlsPosDll, 'GetControllersData');
           @DriverSetControllerData:=GetProcAddress(CtrlsPosDll, 'SetControllerData');
-          @DriverSetCenteringCtrls:=GetProcAddress(CtrlsPosDll, 'SetCentering');
 
           if CtrlsUseRot then begin
             CtrlsRotDll:=LoadLibrary(PChar(CtrlsRotDrvPath));
             @DriverGetControllersRot:=GetProcAddress(CtrlsRotDll, 'GetControllersData');
             @DriverSetControllerData:=GetProcAddress(CtrlsRotDll, 'SetControllerData');
-            @DriverSetCenteringCtrls:=GetProcAddress(CtrlsRotDll, 'SetCentering');
           end;
 
           if CtrlsUseBtns then begin
@@ -402,7 +395,7 @@ begin
 end;
 
 exports
-  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3, SetCentering index 4;
+  GetHMDData index 1, GetControllersData index 2, SetControllerData index 3;
 
 begin
   DllProc:=@DllMain;

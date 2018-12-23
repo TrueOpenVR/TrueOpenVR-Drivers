@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <thread>
-#include <windows.h>
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
@@ -22,16 +21,14 @@ typedef struct _Controller
 	double	Yaw;
 	double	Pitch;
 	double	Roll;
-	WORD	Buttons;
-	BYTE	Trigger;
-	SHORT	ThumbX;
-	SHORT	ThumbY;
+	unsigned short	Buttons;
+	float	Trigger;
+	float	AxisX;
+	float	AxisY;
 } TController, *PController;
 
-DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD);
-DLLEXPORT DWORD __stdcall GetControllersData(__out TController *myController, __out TController *myController2);
-DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed);
-DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex);
+#define TOVR_SUCCESS 0
+#define TOVR_FAILURE 1
 
 #define FREETRACK_HEAP "FT_SharedMem"
 #define FREETRACK_MUTEX "FT_Mutext"
@@ -144,7 +141,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	return true;
 }
 
-double MyOffset(float f, float f2)
+double OffsetYPR(float f, float f2)
 {
 	f -= f2;
 	if (f < -180) {
@@ -161,7 +158,7 @@ double RadToDeg(float r) {
 	return r * (180 / 3.14159265358979323846); //180 / PI
 }
 
-DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
+DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 {
 	if (FTThInit == false) {
 		FTThInit = true;
@@ -174,74 +171,61 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *myHMD)
 		}
 	}
 	if (HMDConnected) {
-		myHMD->X = FreeTrack->X * 0.001;
-		myHMD->Y = FreeTrack->Y * 0.001;
-		myHMD->Z = FreeTrack->Z * 0.001;
-		myHMD->Yaw = MyOffset(RadToDeg(FreeTrack->Yaw), YawOffset);
-		myHMD->Pitch = MyOffset(RadToDeg(FreeTrack->Pitch), PitchOffset);
-		myHMD->Roll = MyOffset(RadToDeg(FreeTrack->Roll), RollOffset);
+		HMD->X = FreeTrack->X * 0.001;
+		HMD->Y = FreeTrack->Y * 0.001;
+		HMD->Z = FreeTrack->Z * 0.001;
+		HMD->Yaw = OffsetYPR(RadToDeg(FreeTrack->Yaw), YawOffset);
+		HMD->Pitch = OffsetYPR(RadToDeg(FreeTrack->Pitch), PitchOffset);
+		HMD->Roll = OffsetYPR(RadToDeg(FreeTrack->Roll), RollOffset);
 
-		return 1;
+		return TOVR_SUCCESS;
 	}
 	else {
-		myHMD->X = 0;
-		myHMD->Y = 0;
-		myHMD->Z = 0;
-		myHMD->Yaw = 0;
-		myHMD->Pitch = 0;
-		myHMD->Roll = 0;
+		HMD->X = 0;
+		HMD->Y = 0;
+		HMD->Z = 0;
+		HMD->Yaw = 0;
+		HMD->Pitch = 0;
+		HMD->Roll = 0;
 
-		return 0;
+		return TOVR_FAILURE;
 	}
 }
 
-DLLEXPORT DWORD __stdcall GetControllersData(__out TController *myController, __out TController *myController2)
+DLLEXPORT DWORD __stdcall GetControllersData(__out TController *FirstController, __out TController *SecondController)
 {
 	//Controller 1
-	myController->X = 0;
-	myController->Y = 0;
-	myController->Z = 0;
+	FirstController->X = 0;
+	FirstController->Y = 0;
+	FirstController->Z = 0;
 
-	myController->Yaw = 0;
-	myController->Pitch = 0;
-	myController->Roll = 0;
+	FirstController->Yaw = 0;
+	FirstController->Pitch = 0;
+	FirstController->Roll = 0;
 
-	myController->Buttons = 0;
-	myController->Trigger = 0;
-	myController->ThumbX = 0;
-	myController->ThumbY = 0;
+	FirstController->Buttons = 0;
+	FirstController->Trigger = 0;
+	FirstController->AxisX = 0;
+	FirstController->AxisY = 0;
 
 	//Controller 2
-	myController2->X = 0;
-	myController2->Y = 0;
-	myController2->Z = 0;
+	SecondController->X = 0;
+	SecondController->Y = 0;
+	SecondController->Z = 0;
 
-	myController2->Yaw = 0;
-	myController2->Pitch = 0;
-	myController2->Roll = 0;
+	SecondController->Yaw = 0;
+	SecondController->Pitch = 0;
+	SecondController->Roll = 0;
 
-	myController2->Buttons = 0;
-	myController2->Trigger = 0;
-	myController2->ThumbX = 0;
-	myController2->ThumbY = 0;
+	SecondController->Buttons = 0;
+	SecondController->Trigger = 0;
+	SecondController->AxisX = 0;
+	SecondController->AxisY = 0;
 
-	return 0;
+	return TOVR_FAILURE;
 }
 
-DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in WORD	MotorSpeed)
+DLLEXPORT DWORD __stdcall SetControllerData(__in int dwIndex, __in unsigned char MotorSpeed)
 {
-	return 0;
-}
-
-DLLEXPORT DWORD __stdcall SetCentering(__in int dwIndex)
-{
-	if (dwIndex == 0 && HMDConnected) {
-		YawOffset = RadToDeg(FreeTrack->Yaw);
-		PitchOffset = RadToDeg(FreeTrack->Pitch);
-		RollOffset = RadToDeg(FreeTrack->Roll);
-		return 1;
-	}
-	else {
-		return 0;
-	}
+	return TOVR_FAILURE;
 }
