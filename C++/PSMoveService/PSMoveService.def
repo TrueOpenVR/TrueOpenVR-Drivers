@@ -1,6 +1,5 @@
-LIBRARY   Sample  
+LIBRARY   PSMoveService
 EXPORTS  
    GetHMDData   		@1  
    GetControllersData   @2  
-   SetControllerData	@3  
-   SetCentering			@4  
+   SetControllerData	@3
