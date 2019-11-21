@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <Windows.h>
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
