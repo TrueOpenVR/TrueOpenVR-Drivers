@@ -1,6 +1,6 @@
 ﻿En:
 Initial implementation of the Razer Hydra driver.
-You need to add a change in the coordinates of the controllers during rotation and fix calibration.
+Need to add a change in the coordinates of the controllers during rotation and fix calibration.
 
 Ru:
 Начальная реалиализация драйвера Razer Hydra. 
