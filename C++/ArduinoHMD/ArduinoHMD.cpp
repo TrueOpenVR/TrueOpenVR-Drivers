@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <windows.h>
 #include <thread>
 #include <atlstr.h> 
@@ -35,40 +34,64 @@ typedef struct _Controller
 
 HANDLE hSerial;
 bool HMDConnected = false, RazorInit = false, HMDInitCentring = false;
-float RazorIMU[3], yprOffset[3]; //yaw, pitch, roll
+float ArduinoIMU[3] = { 0, 0, 0 }, yprOffset[3] = { 0, 0, 0 }; //Yaw, Pitch, Roll
+float LastArduinoIMU[3] = { 0, 0, 0 }; 
 double fPos[3];
 std::thread *pRRthread = NULL;
+
+bool CorrectAngleValue(float Value)
+{
+	if (Value > -180 && Value < 180)
+		return true;
+	else
+		return false;
+}
 
 DWORD SetCentering(__in int dwIndex)
 {
 	if (HMDConnected && dwIndex == 0) {
-		yprOffset[0] = RazorIMU[0];
-		yprOffset[1] = RazorIMU[1];
-		yprOffset[2] = RazorIMU[2];
+		yprOffset[0] = ArduinoIMU[0];
+		yprOffset[1] = ArduinoIMU[1];
+		yprOffset[2] = ArduinoIMU[2];
 
 		return TOVR_SUCCESS;
 	}
-	else {
+	else
 		return TOVR_FAILURE;
-	}
-
 }
 
-void RazorIMURead()
+void ArduinoIMURead()
 {
 	DWORD bytesRead;
 
 	while (HMDConnected) {
-		ReadFile(hSerial, &RazorIMU, sizeof(RazorIMU), &bytesRead, 0);
-		if (HMDInitCentring == false)
-			if (RazorIMU[0] != 0 || RazorIMU[1] != 0 || RazorIMU[2] != 0) {
-				SetCentering(0);
-				HMDInitCentring = true;
-			}	
+		ReadFile(hSerial, &ArduinoIMU, sizeof(ArduinoIMU), &bytesRead, 0);
+
+		if (CorrectAngleValue(ArduinoIMU[0]) == false || CorrectAngleValue(ArduinoIMU[1]) == false || CorrectAngleValue(ArduinoIMU[2]) == false)
+		{
+			//Last correct values
+			ArduinoIMU[0] = LastArduinoIMU[0];
+			ArduinoIMU[1] = LastArduinoIMU[1];
+			ArduinoIMU[2] = LastArduinoIMU[2];
+
+			PurgeComm(hSerial, PURGE_TXCLEAR | PURGE_RXCLEAR);
+		}
+		else if (CorrectAngleValue(ArduinoIMU[0]) && CorrectAngleValue(ArduinoIMU[1]) && CorrectAngleValue(ArduinoIMU[2])) //Save last correct values
+		{
+			LastArduinoIMU[0] = ArduinoIMU[0];
+			LastArduinoIMU[1] = ArduinoIMU[1];
+			LastArduinoIMU[2] = ArduinoIMU[2];
+
+			if (HMDInitCentring == false)
+				if (ArduinoIMU[0] != 0 || ArduinoIMU[1] != 0 || ArduinoIMU[2] != 0) {
+					SetCentering(0);
+					HMDInitCentring = true;
+				}
+		}
 	}
 }
 
-void RazorStart(){
+void RazorStart() {
 	CRegKey key;
 	TCHAR _driversPath[MAX_PATH];
 	LONG status = key.Open(HKEY_CURRENT_USER, _T("Software\\TrueOpenVR"));
@@ -79,22 +102,25 @@ void RazorStart(){
 	}
 	key.Close();
 
-	CString configPath(_driversPath);
-	configPath.Format(_T("%sRazorIMU.ini"), _driversPath);
+	TCHAR configPath[MAX_PATH] = { 0 };
+	_tcscat_s(configPath, sizeof(configPath), _driversPath);
+	_tcscat_s(configPath, sizeof(configPath), _T("ArduinoHMD.ini"));
 
 	if (status == ERROR_SUCCESS && PathFileExists(configPath)) {
-		CIniReader IniFile((char *)configPath.GetBuffer());
+		CIniReader IniFile((char *)configPath);
 
-		CString sPortName;
-		sPortName.Format(_T("COM%d"), IniFile.ReadInteger("Main", "ComPort", 2));
+		TCHAR PortName[15] = { 0 };
+		_stprintf(PortName, TEXT("COM%d"), IniFile.ReadInteger("Main", "ComPort", 2));
+		//CString sPortName;
+		//sPortName.Format(_T("COM%d"), IniFile.ReadInteger("Main", "ComPort", 2));
 
-		hSerial = ::CreateFile(sPortName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+		hSerial = ::CreateFile(PortName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
 		if (hSerial != INVALID_HANDLE_VALUE && GetLastError() != ERROR_FILE_NOT_FOUND) {
 
 			DCB dcbSerialParams = { 0 };
 			dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-			
+
 			if (GetCommState(hSerial, &dcbSerialParams))
 			{
 				dcbSerialParams.BaudRate = CBR_115200;
@@ -106,7 +132,7 @@ void RazorStart(){
 				{
 					HMDConnected = true;
 					PurgeComm(hSerial, PURGE_TXCLEAR | PURGE_RXCLEAR);
-					pRRthread = new std::thread(RazorIMURead);
+					pRRthread = new std::thread(ArduinoIMURead);
 				}
 			}
 		}
@@ -116,11 +142,10 @@ void RazorStart(){
 float OffsetYPR(float f, float f2)
 {
 	f -= f2;
-	if (f < -180) {
+	if (f < -180)
 		f += 360;
-	} else if (f > 180) {
+	else if (f > 180)
 		f -= 360;
-	}
 
 	return f;
 }
@@ -132,7 +157,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 {
 	switch (ul_reason_for_call)
 	{
-	case DLL_PROCESS_DETACH: 
+	case DLL_PROCESS_DETACH:
 		if (HMDConnected) {
 			HMDConnected = false;
 			if (pRRthread) {
@@ -143,7 +168,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 			CloseHandle(hSerial);
 		}
 		break;
-		
+
 	}
 	return true;
 }
@@ -186,9 +211,9 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 		HMD->X = fPos[0];
 		HMD->Y = fPos[1];
 		HMD->Z = fPos[2];
-		HMD->Yaw = OffsetYPR(RazorIMU[2], yprOffset[2]);
-		HMD->Pitch = OffsetYPR(RazorIMU[0], yprOffset[0]) * -1;
-		HMD->Roll = OffsetYPR(RazorIMU[1], yprOffset[1]) * -1;
+		HMD->Yaw = OffsetYPR(ArduinoIMU[2], yprOffset[2]);
+		HMD->Pitch = OffsetYPR(ArduinoIMU[0], yprOffset[0]) * -1;
+		HMD->Roll = OffsetYPR(ArduinoIMU[1], yprOffset[1]) * -1;
 
 		return TOVR_SUCCESS;
 	}

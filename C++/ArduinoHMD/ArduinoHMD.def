@@ -1,0 +1,5 @@
+LIBRARY   ArduinoHMD  
+EXPORTS  
+   GetHMDData   		@1  
+   GetControllersData   @2  
+   SetControllerData	@3

@@ -1,4 +1,4 @@
-﻿Razor IMU arduino tracker (output binary - 3 float)
+﻿Arduino HMD tracker (output binary - 3 float)
 
 En:
 Keys: 
