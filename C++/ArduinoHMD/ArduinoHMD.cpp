@@ -38,6 +38,8 @@ float ArduinoIMU[3] = { 0, 0, 0 }, yprOffset[3] = { 0, 0, 0 }; //Yaw, Pitch, Rol
 float LastArduinoIMU[3] = { 0, 0, 0 }; 
 double fPos[3];
 std::thread *pRRthread = NULL;
+float SitDownOffset = 0;
+int SitDownPressKey;
 
 bool CorrectAngleValue(float Value)
 {
@@ -109,6 +111,9 @@ void RazorStart() {
 	if (status == ERROR_SUCCESS && PathFileExists(configPath)) {
 		CIniReader IniFile((char *)configPath);
 
+		SitDownPressKey = IniFile.ReadInteger("Main", "SitDownPressKey", 0);
+		SitDownOffset = IniFile.ReadFloat("Main", "SitDownOffset", 0);
+
 		TCHAR PortName[15] = { 0 };
 		_stprintf(PortName, TEXT("COM%d"), IniFile.ReadInteger("Main", "ComPort", 2));
 		//CString sPortName;
@@ -176,6 +181,8 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 #define StepPos 0.0033;
 #define StepRot 0.1;
 
+float PosZOffset = 0;
+
 DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 {
 	if (RazorInit == false) {
@@ -208,8 +215,13 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 			fPos[2] = 0;
 		}
 
+		if ((GetAsyncKeyState(SitDownPressKey) & 0x8000) != 0)
+			PosZOffset = SitDownOffset;
+		else
+			PosZOffset = 0;
+
 		HMD->X = fPos[0];
-		HMD->Y = fPos[1];
+		HMD->Y = fPos[1] - PosZOffset;
 		HMD->Z = fPos[2];
 		HMD->Yaw = OffsetYPR(ArduinoIMU[2], yprOffset[2]);
 		HMD->Pitch = OffsetYPR(ArduinoIMU[0], yprOffset[0]) * -1;

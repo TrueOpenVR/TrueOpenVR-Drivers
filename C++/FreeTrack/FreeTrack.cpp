@@ -1,5 +1,7 @@
-#include "stdafx.h"
+#include <windows.h>
 #include <thread>
+#include <atlstr.h> 
+#include "IniReader\IniReader.h"
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
@@ -117,12 +119,41 @@ void FTRead()
 }
 
 double YawOffset = 0, PitchOffset = 0, RollOffset = 0;
+float SitDownOffset = 0;
+int SitDownPressKey;
+float PosZOffset = 0;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
 	switch (ul_reason_for_call)
 	{
-	//case DLL_PROCESS_ATTACH: 
+	case DLL_PROCESS_ATTACH: {
+		
+		CRegKey key;
+		TCHAR _driversPath[MAX_PATH];
+		LONG status = key.Open(HKEY_CURRENT_USER, _T("Software\\TrueOpenVR"));
+		if (status == ERROR_SUCCESS)
+		{
+			ULONG regSize = sizeof(_driversPath);
+			status = key.QueryStringValue(_T("Drivers"), _driversPath, &regSize);
+		}
+		key.Close();
+
+		TCHAR configPath[MAX_PATH] = { 0 };
+		_tcscat_s(configPath, sizeof(configPath), _driversPath);
+		_tcscat_s(configPath, sizeof(configPath), _T("FreeTrack.ini"));
+
+		if (status == ERROR_SUCCESS && PathFileExists(configPath)) {
+			CIniReader IniFile((char *)configPath);
+
+			SitDownPressKey = IniFile.ReadInteger("Main", "SitDownPressKey", 0);
+			SitDownOffset = IniFile.ReadFloat("Main", "SitDownOffset", 0);
+		}
+
+		break;
+	}
+							
+							
 	//case DLL_THREAD_ATTACH:
 	//case DLL_THREAD_DETACH:
 
@@ -171,8 +202,14 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 		}
 	}
 	if (HMDConnected) {
+
+		if ((GetAsyncKeyState(SitDownPressKey) & 0x8000) != 0)
+			PosZOffset = SitDownOffset;
+		else
+			PosZOffset = 0;
+
 		HMD->X = FreeTrack->X * 0.001;
-		HMD->Y = FreeTrack->Y * 0.001;
+		HMD->Y = FreeTrack->Y * 0.001 - PosZOffset;
 		HMD->Z = FreeTrack->Z * 0.001;
 		HMD->Yaw = OffsetYPR(RadToDeg(FreeTrack->Yaw), YawOffset);
 		HMD->Pitch = OffsetYPR(RadToDeg(FreeTrack->Pitch), PitchOffset);
