@@ -119,8 +119,8 @@ void FTRead()
 }
 
 double YawOffset = 0, PitchOffset = 0, RollOffset = 0;
-float SitDownOffset = 0;
-int SitDownPressKey;
+float CrouchOffset = 0;
+int CrouchPressKey;
 float PosZOffset = 0;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
@@ -146,8 +146,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 		if (status == ERROR_SUCCESS && PathFileExists(configPath)) {
 			CIniReader IniFile((char *)configPath);
 
-			SitDownPressKey = IniFile.ReadInteger("Main", "SitDownPressKey", 0);
-			SitDownOffset = IniFile.ReadFloat("Main", "SitDownOffset", 0);
+			CrouchPressKey = IniFile.ReadInteger("Main", "CrouchPressKey", 0);
+			CrouchOffset = IniFile.ReadFloat("Main", "CrouchOffset", 0);
 		}
 
 		break;
@@ -203,8 +203,8 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 	}
 	if (HMDConnected) {
 
-		if ((GetAsyncKeyState(SitDownPressKey) & 0x8000) != 0)
-			PosZOffset = SitDownOffset;
+		if ((GetAsyncKeyState(CrouchPressKey) & 0x8000) != 0)
+			PosZOffset = CrouchOffset;
 		else
 			PosZOffset = 0;
 

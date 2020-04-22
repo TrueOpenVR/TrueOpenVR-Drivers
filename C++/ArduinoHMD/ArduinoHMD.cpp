@@ -38,8 +38,8 @@ float ArduinoIMU[3] = { 0, 0, 0 }, yprOffset[3] = { 0, 0, 0 }; //Yaw, Pitch, Rol
 float LastArduinoIMU[3] = { 0, 0, 0 }; 
 double fPos[3];
 std::thread *pRRthread = NULL;
-float SitDownOffset = 0;
-int SitDownPressKey;
+float CrouchOffset = 0;
+int CrouchPressKey;
 
 bool CorrectAngleValue(float Value)
 {
@@ -111,8 +111,8 @@ void RazorStart() {
 	if (status == ERROR_SUCCESS && PathFileExists(configPath)) {
 		CIniReader IniFile((char *)configPath);
 
-		SitDownPressKey = IniFile.ReadInteger("Main", "SitDownPressKey", 0);
-		SitDownOffset = IniFile.ReadFloat("Main", "SitDownOffset", 0);
+		CrouchPressKey = IniFile.ReadInteger("Main", "CrouchPressKey", 0);
+		CrouchOffset = IniFile.ReadFloat("Main", "CrouchOffset", 0);
 
 		TCHAR PortName[15] = { 0 };
 		_stprintf(PortName, TEXT("COM%d"), IniFile.ReadInteger("Main", "ComPort", 2));
@@ -215,8 +215,8 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 			fPos[2] = 0;
 		}
 
-		if ((GetAsyncKeyState(SitDownPressKey) & 0x8000) != 0)
-			PosZOffset = SitDownOffset;
+		if ((GetAsyncKeyState(CrouchPressKey) & 0x8000) != 0)
+			PosZOffset = CrouchOffset;
 		else
 			PosZOffset = 0;
 
