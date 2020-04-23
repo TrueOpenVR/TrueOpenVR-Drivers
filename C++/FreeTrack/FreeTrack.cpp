@@ -209,8 +209,8 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 			PosZOffset = 0;
 
 		HMD->X = FreeTrack->X * 0.001;
-		HMD->Y = FreeTrack->Y * 0.001 - PosZOffset;
-		HMD->Z = FreeTrack->Z * 0.001;
+		HMD->Y = FreeTrack->Y * 0.001;
+		HMD->Z = FreeTrack->Z * 0.001 - PosZOffset;
 		HMD->Yaw = OffsetYPR(RadToDeg(FreeTrack->Yaw), YawOffset);
 		HMD->Pitch = OffsetYPR(RadToDeg(FreeTrack->Pitch), PitchOffset);
 		HMD->Roll = OffsetYPR(RadToDeg(FreeTrack->Roll), RollOffset);

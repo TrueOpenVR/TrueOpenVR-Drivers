@@ -33,7 +33,7 @@ typedef struct _Controller
 #define TOVR_FAILURE 1
 
 HANDLE hSerial;
-bool HMDConnected = false, RazorInit = false, HMDInitCentring = false;
+bool HMDConnected = false, HMDInit = false, HMDInitCentring = false;
 float ArduinoIMU[3] = { 0, 0, 0 }, yprOffset[3] = { 0, 0, 0 }; //Yaw, Pitch, Roll
 float LastArduinoIMU[3] = { 0, 0, 0 }; 
 double fPos[3];
@@ -93,7 +93,7 @@ void ArduinoIMURead()
 	}
 }
 
-void RazorStart() {
+void IMUStart() {
 	CRegKey key;
 	TCHAR _driversPath[MAX_PATH];
 	LONG status = key.Open(HKEY_CURRENT_USER, _T("Software\\TrueOpenVR"));
@@ -162,32 +162,35 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 {
 	switch (ul_reason_for_call)
 	{
-	case DLL_PROCESS_DETACH:
-		if (HMDConnected) {
-			HMDConnected = false;
-			if (pRRthread) {
-				pRRthread->join();
-				delete pRRthread;
-				pRRthread = nullptr;
+		//case DLL_PROCESS_ATTACH:
+		case DLL_PROCESS_DETACH:
+		{
+			if (HMDConnected) {
+				HMDConnected = false;
+				if (pRRthread) {
+					pRRthread->join();
+					delete pRRthread;
+					pRRthread = nullptr;
+				}
+				CloseHandle(hSerial);
 			}
-			CloseHandle(hSerial);
+			break;
 		}
-		break;
 
 	}
 	return true;
 }
 
 #define StepPos 0.0033;
-#define StepRot 0.1;
+#define StepRot 0.2;
 
 float PosZOffset = 0;
 
 DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 {
-	if (RazorInit == false) {
-		RazorInit = true;
-		RazorStart();
+	if (HMDInit == false) {
+		HMDInit = true;
+		IMUStart();
 	}
 
 	if (HMDConnected) {
@@ -209,7 +212,8 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 		if ((GetAsyncKeyState(VK_NUMPAD7) & 0x8000) != 0 && yprOffset[2] < 180) yprOffset[2] += StepRot;
 		if ((GetAsyncKeyState(VK_NUMPAD9) & 0x8000) != 0 && yprOffset[2] > -180) yprOffset[2] -= StepRot;
 
-		if ((GetAsyncKeyState(VK_SUBTRACT) & 0x8000) != 0) {
+		if ((GetAsyncKeyState(VK_SUBTRACT) & 0x8000) != 0)
+		{
 			fPos[0] = 0;
 			fPos[1] = 0;
 			fPos[2] = 0;
@@ -221,11 +225,11 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 			PosZOffset = 0;
 
 		HMD->X = fPos[0];
-		HMD->Y = fPos[1] - PosZOffset;
-		HMD->Z = fPos[2];
-		HMD->Yaw = OffsetYPR(ArduinoIMU[2], yprOffset[2]);
-		HMD->Pitch = OffsetYPR(ArduinoIMU[0], yprOffset[0]) * -1;
-		HMD->Roll = OffsetYPR(ArduinoIMU[1], yprOffset[1]) * -1;
+		HMD->Y = fPos[1];
+		HMD->Z = fPos[2] - PosZOffset;
+		HMD->Yaw = OffsetYPR(ArduinoIMU[0], yprOffset[0]);
+		HMD->Pitch = OffsetYPR(ArduinoIMU[1], yprOffset[1]);
+		HMD->Roll = OffsetYPR(ArduinoIMU[2], yprOffset[2]);
 
 		return TOVR_SUCCESS;
 	}

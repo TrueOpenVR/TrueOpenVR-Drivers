@@ -1,6 +1,4 @@
-#include "stdafx.h"
 #include <windows.h>
-#include <stdlib.h>
 
 #define DLLEXPORT extern "C" __declspec(dllexport)
 
@@ -62,8 +60,8 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 	switch (HMDMode) {
 	case 0:
 		HMD->X = 0.015;
-		HMD->Y = 0.06;
-		HMD->Z = 0.037;
+		HMD->Y = 0.037;
+		HMD->Z = 0.06;
 		HMD->Yaw = 45;
 		HMD->Pitch = -25;
 		HMD->Roll = -10;
@@ -74,11 +72,11 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 		if (myX < 0.1) {
 			myX += 0.001;
 		}
-		else if (myY < 0.1) {
-			myY += 0.001;
-		}
 		else if (myZ < 0.1) {
 			myZ += 0.001;
+		}
+		else if (myY < 0.1) {
+			myY += 0.001;
 		}
 		else if (myYaw < 20)
 		{
@@ -104,9 +102,9 @@ DLLEXPORT DWORD __stdcall GetHMDData(__out THMD *HMD)
 		HMD->X = myX;
 		HMD->Y = myY;
 		HMD->Z = myZ;
-		HMD->Yaw = myYaw;
-		HMD->Pitch = myPitch - 25;
-		HMD->Roll = myRoll - 10;
+		HMD->Yaw = myYaw - 25;
+		HMD->Pitch = myPitch - 10;
+		HMD->Roll = myRoll;
 		break;
 
 	case 2:
@@ -132,8 +130,8 @@ DLLEXPORT DWORD __stdcall GetControllersData(__out TController *FirstController,
 	switch (ControllerMode) {
 	case 0:
 		FirstController->X = 0.24;
-		FirstController->Y = -0.83;
-		FirstController->Z = 0.71;
+		FirstController->Y = 0.71;
+		FirstController->Z = -0.83;
 
 		FirstController->Yaw = 15;
 		FirstController->Pitch = 32;
@@ -146,8 +144,8 @@ DLLEXPORT DWORD __stdcall GetControllersData(__out TController *FirstController,
 
 
 		SecondController->X = 0.25;
-		SecondController->Y = 0.83;
-		SecondController->Z = 0.74;
+		SecondController->Y = 0.74;
+		SecondController->Z = 0.83;
 
 		SecondController->Yaw = 31;
 		SecondController->Pitch = 12;
