@@ -100,12 +100,13 @@ begin
     StatCount:=StatCount + 1;
 
     if HMDUseRot then begin
-      MyStat:=MyStat + DriverGetHMDRot(HMDRot);
       StatCount:=StatCount + 1;
-
-      MyHMD.Yaw:=HMDRot.Yaw;
-      MyHMD.Pitch:=HMDRot.Pitch;
-      MyHMD.Roll:=HMDRot.Roll;
+      if DriverGetHMDRot(HMDRot) = TOVR_SUCCESS then begin
+        MyHMD.Yaw:=HMDRot.Yaw;
+        MyHMD.Pitch:=HMDRot.Pitch;
+        MyHMD.Roll:=HMDRot.Roll;
+        MyStat:=MyStat + 1;
+      end;
     end;
 
     //HMD offset pos
