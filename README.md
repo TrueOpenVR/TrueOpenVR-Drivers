@@ -4,13 +4,17 @@
 Ready and samples drivers for VR devices.
 
 ## Drivers
+**ArduinoHMD** - driver allowing head tracking the rotation of the VR HMD, using the tracker Razor IMU, based on Arduino and GY-85 or MPU 6050, with firmware [Razor AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino) or any compatible. COM port number is changing in the "ArduinoHMD.ini" file, in the TOVR drivers folder. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/ArduinoHMD).
+
+**ArduinoControllers** - driver allowing tracking position and rotation and receive buttons for VR controllers. Positioning in space is performed using two IMU sensors based on data from their axes. COM ports numbers is changing in the "ArduinoControllers.ini" file, in the TOVR drivers folder. Firmware for Arduino can be found [here](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Arduino/ControllerIMUPos.ino). Read more about creating controllers [here](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Controllers.md). More information about setting up [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/ArduinoControllers).
+
 **PSMoveService** - driver allowing to get position in space for DIY devices (using ping pong balls with LEDs) and use PS Move controllers and PSVR HMD. Need to work [PSMoveService](https://github.com/cboulay/PSMoveService). Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
 
 **RazerHydra** - driver allowing to use the Razer Hydra controllers. To work you need to install "SixenceSDK" ("Additionally\RazerHydra\Install.bat"). Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/RazerHydra).
 
-**ArduinoControllers** - driver allowing tracking position and rotation and receive buttons for VR controllers. Together with ping pong balls, with LEDs, you can get full VR controllers (run through the "SpliiterAdvance" driver with "PSMoveService"). COM ports numbers is changing in the "ArduinoControllers.ini" file, in the TOVR drivers folder. Firmware for Arduino can be found [here](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Arduino/Controller.ino). Read more about creating controllers. [here](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Controllers.md).
+**AndroidControllers** - driver allowing tracking the rotation and receive buttons for VR controllers. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/AndroidControllers).
 
-**ArduinoControllersIMUPos** - driver allowing tracking position and rotation and receive buttons for VR controllers. Positioning in space is performed using two IMU sensors based on data from their axes. COM ports numbers is changing in the "ArduinoControllers.ini" file, in the TOVR drivers folder. Firmware for Arduino can be found [here](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Arduino/ControllerIMUPos.ino). Read more about creating controllers. [here](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Controllers.md).
+**FreeTrack** - driver allowing head tracking the rotation and positioning of the VR HMD with using [OpenTrack](https://github.com/opentrack/opentrack/). In OpenTrack supports the following trackers: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). In the OpenTrack settings, you need to change the "Output interface" to "freetrack 2.0 Enhanced".
 
 **SplitterAdvance** - driver allowing to connect one driver for positioning, a second driver for rotation, a third driver for buttons, for VR HMD and VR controllers. You can configure the drivers in the "SplitterAdvance.ini" or "SplitterAdvance64.ini" (for 64 bit architecture) file located in the "TrueOpenVR\Drivers" folder, changing the drivers names. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/Delphi/SplitterAdvance).
 
@@ -18,13 +22,7 @@ Ready and samples drivers for VR devices.
 
 **Splitter** - driver allowing to connect one driver for the VR HMD, and the second driver for the controllers. You can configure the drivers in the "Splitter.ini" file located in the "TrueOpenVR\Drivers" folder, changing the drivers names.
 
-**FreeTrack** - driver allowing head tracking the rotation and positioning of the VR HMD with using [OpenTrack](https://github.com/opentrack/opentrack/). In OpenTrack supports the following trackers: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). In the OpenTrack settings, you need to change the "Output interface" to "freetrack 2.0 Enhanced".
-
-**ArduinoHMD** - driver allowing head tracking the rotation of the VR HMD, using the tracker Razor IMU, based on Arduino and GY-85 or MPU 6050, with firmware [Razor AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino) or any compatible. COM port number is changing in the "ArduinoHMD.ini" file, in the TOVR drivers folder. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/ArduinoHMD).
-
 **XInput** - driver allowing to receive buttons from the Xbox gamepad for VR controllers. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/XInput).
-
-**AndroidControllers** - driver allowing tracking the rotation and receive buttons for VR controllers. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/AndroidControllers).
 
 **Keyboard** - driver allowing to change the position of the VR HMD, VR controllers, rotation them. Required for demonstrations and tests. Read more [here](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/Keyboard).
 

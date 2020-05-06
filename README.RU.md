@@ -4,13 +4,17 @@
 Готовые и демонстрационные драйверы для VR устройств.
 
 ## Драйверы
+**ArduinoHMD** - драйвер позволяющий отслеживать вращения VR шлема, с помощью трекера Razor IMU, на базе Arduino и GY-85 или MPU 6050, с прошивкой [Razor AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino) или любой совместимой. Номер COM-порта изменяется в файле "ArduinoHMD.ini", в папке драйверов TOVR. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/ArduinoHMD).
+
+**ArduinoControllers** - драйвер позволяющий отслеживать позицию и вращение и получать кнопки для VR контроллеров. Позиционирование в пространстве происходит, с помощью двух IMU датчиков, на основе данных их осей. Номера COM-портов изменяются в файле "ArduinoControllers.ini", в папке драйверов TOVR. Прошивку для Arduino можно найти [здесь](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Arduino/ControllerIMUPos.ino). Подробнее о создании контроллеров [тут](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Controllers.RU.md). Подробнее о настройке [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/ArduinoControllers).
+
 **PSMoveService** - драйвер позволяющий получать позиционирование, в пространстве, для самодельных устройств (с помощью пинг понг шариков со светодиодами) и использовать PS Move контроллеры и PSVR шлем. Для работы необходим ["PSMoveService"](https://github.com/cboulay/PSMoveService). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/PSMoveService).
 
 **RazerHydra** - драйвер позволяющий получать использовать контроллеры Razer Hydra. Для работы необходимо установить "SixenceSDK" ("Additionally\RazerHydra\Install.bat"). Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/RazerHydra).
 
-**ArduinoControllers** - драйвер позволяющий отслеживать позицию и вращение и получать кнопки для VR контроллеров. Вместе с пинг понг шариками, со светодиодами, можно получить полноценные VR контроллеры (запускать через "SpliiterAdvance" драйвер, вместе с "PSMoveService"). Номера COM-портов изменяются в файле "ArduinoControllers.ini", в папке драйверов TOVR. Прошивку для Arduino можно найти [здесь](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Arduino/Controller.ino). Подробнее о создании контроллеров [тут](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Controllers.RU.md).
+**AndroidControllers** - драйвер позволяющий отслеживать вращение и получать кнопки для VR контроллеров. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/AndroidControllers).
 
-**ArduinoControllersIMUPos** - драйвер позволяющий отслеживать позицию и вращение и получать кнопки для VR контроллеров. Позиционирование в пространстве происходит, с помощью двух IMU датчиков, на основе данных их осей. Номера COM-портов изменяются в файле "ArduinoControllers.ini", в папке драйверов TOVR. Прошивку для Arduino можно найти [здесь](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Arduino/ControllerIMUPos.ino). Подробнее о создании контроллеров [тут](https://github.com/TrueOpenVR/TrueOpenVR-DIY/blob/master/Controllers/Controllers.RU.md).
+**FreeTrack** - драйвер позволяющий отслеживать вращение и позиционирование VR шлема, с помощью [OpenTrack](https://github.com/opentrack/opentrack/). В OpenTrack поддерживаются следующие трекеры: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). В настройках OpenTrack нужно изменить "Выходной интерфейс" на "freetrack 2.0 Enhanced".
 
 **SplitterAdvance** - драйвер позволяющий подключить один драйвер для позиционирования, второй драйвер для вращения, третий драйвер для кнопок, для VR шлема и VR контроллеров. Настроить драйверы можно в файле "Splitter.ini" или "Splitter64.ini" (для 64 битной архитектуры), находяющийся в папке "TrueOpenVR\Drivers", изменив названия драйверов. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/blob/master/Delphi/SplitterAdvance/README.RU.md).
 
@@ -18,13 +22,7 @@
 
 **Splitter** - драйвер позволяющий подключить один драйвер для VR шлема, а второй драйвер для контроллеров. Настроить драйверы можно в файле "Splitter.ini", находяющийся в папке "TrueOpenVR\Drivers", изменив названия драйверов.
 
-**FreeTrack** - драйвер позволяющий отслеживать вращение и позиционирование VR шлема, с помощью [OpenTrack](https://github.com/opentrack/opentrack/). В OpenTrack поддерживаются следующие трекеры: Oculus Rift (DK1, DK2, CV1), Aruco paper marker (webcam + paper), FreePie UDP receiver (Android), Hatire Arduino, PointTracker, Intel RealSense, Razer Hydra, SteamVR). В настройках OpenTrack нужно изменить "Выходной интерфейс" на "freetrack 2.0 Enhanced".
-
-**ArduinoHMD** - драйвер позволяющий отслеживать вращения VR шлема, с помощью трекера Razor IMU, на базе Arduino и GY-85 или MPU 6050, с прошивкой [Razor AHRS](https://github.com/Razor-AHRS/razor-9dof-ahrs/tree/master/Arduino) или любой совместимой. Номер COM-порта изменяется в файле "ArduinoHMD.ini", в папке драйверов TOVR. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/ArduinoHMD).
-
 **XInput** - драйвер позволяющий получать кнопки, от Xbox геймпада, для VR контроллеров. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/XInput).
-
-**AndroidControllers** - драйвер позволяющий отслеживать вращение и получать кнопки для VR контроллеров. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/AndroidControllers).
 
 **Keyboard** - драйвер позволяющий изменять позицию VR шлема, VR контроллеров, вращать их. Необходим для демонстрации и тестов. Подробнее [тут](https://github.com/TrueOpenVR/TrueOpenVR-Drivers/tree/master/C%2B%2B/Keyboard).
 
