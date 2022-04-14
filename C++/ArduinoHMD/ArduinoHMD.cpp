@@ -90,6 +90,8 @@ void ArduinoIMURead()
 					HMDInitCentring = true;
 				}
 		}
+
+		if (bytesRead == 0) Sleep(1);
 	}
 }
 
